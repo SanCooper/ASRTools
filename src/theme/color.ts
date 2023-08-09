@@ -1,0 +1,56 @@
+const Pallets = {
+  netral_10: '#FFFFFF',
+  netral_20: '#F5F5F5',
+  netral_30: '#EDEDED',
+  netral_40: '#E0E0E0',
+  netral_50: '#C2C2C2',
+  netral_60: '#9E9E9E',
+  netral_70: '#757575',
+  netral_80: '#616161',
+  netral_90: '#424242',
+  netral_100: '#0A0A0A',
+
+  primary_main: '#172F53',
+  primary_surface: '#CDEFEC',
+  primary_border: '#ACE5E0',
+  primary_hover: '#049386',
+  primary_pressed: '#025850',
+  primary_focus: '#05B1A120',
+
+  secondary_main: '#F47A4D',
+  secondary_surface: '#CDE1E8',
+  secondary_border: '#ACCCD9',
+  secondary_hover: '#045676',
+  secondary_pressed: '#023347',
+  secondary_focus: '#05678E20',
+
+  tertiary_main: '#EA6C00',
+  tertiary_surface: '#FBE2CC',
+  tertiary_border: '#F8CEAA',
+  tertiary_hover: '#C35A00',
+  tertiary_pressed: '#9C4800',
+  tertiary_focus: '#EA6C0020',
+
+  danger_main: '#FF0000',
+  danger_surface: '#FFCCCC',
+  danger_border: '#FFAAAA',
+  danger_hover: '#D40000',
+  danger_pressed: '#800000',
+  danger_focus: '#FF000020',
+
+  white: '#FFFFFF',
+  black: '#000000',
+  divider: '#DDDDDD',
+  transparent_0: 'rgba(255, 255, 255, 0)',
+  transparent_1: 'rgba(000, 000, 000, 0.5)',
+  transparent_2: 'rgba(255, 255, 255, 0.25)',
+  transparent_3: 'rgba(000, 000, 000, 0.6)',
+  placaholder: '#999999',
+  field_color: '#F5F5F5',
+
+  bar: '#EAEBEF',
+  backIcon: '#757575',
+  secondary_black: '#0D0D0DCC',
+};
+
+export default Pallets;

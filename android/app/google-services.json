@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "918601481131",
+    "project_id": "asr-tools-3ef3d",
+    "storage_bucket": "asr-tools-3ef3d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918601481131:android:0ed6435e16bd39e63830ee",
+        "android_client_info": {
+          "package_name": "com.asrtools"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "918601481131-uj4t1v7maink0kronduet2s1mq00qff7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4mMFbZk3hzVg1AxkdkvlJC0MYAtaQZQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "918601481131-uj4t1v7maink0kronduet2s1mq00qff7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
