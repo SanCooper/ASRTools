@@ -1,15 +1,10 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {
-  Dashboard,
-  Employee,
-  Login,
-  Report,
-  Stock,
-  IncomingTransaction,
-  OutgoingTransaction,
-} from '../screens';
+import {Dashboard, Login, Report, Stock} from '../screens';
 import {RootStackParamList} from '../types/navigation';
+import OutgoingStack from './OutgoingStack';
+import IncomingStack from './IncomingStack';
+import EmployeeStack from './EmployeeStack';
 
 const RootNavigation = createNativeStackNavigator<RootStackParamList>();
 
@@ -29,14 +24,14 @@ const RootStack = () => {
         options={{headerShown: false}}
       />
       <RootNavigation.Screen
-        name="Employee"
-        component={Employee}
-        options={{headerShown: false}}
+        name="EmployeeStack"
+        component={EmployeeStack}
+        options={{headerShown: true, title: 'Data Karyawan'}}
       />
       <RootNavigation.Screen
         name="Stock"
         component={Stock}
-        options={{headerShown: false}}
+        options={{headerShown: true, title: 'Stok Barang'}}
       />
       <RootNavigation.Screen
         name="Report"
@@ -44,14 +39,14 @@ const RootStack = () => {
         options={{headerShown: false}}
       />
       <RootNavigation.Screen
-        name="IncomingTransaction"
-        component={IncomingTransaction}
-        options={{headerShown: false}}
+        name="IncomingStack"
+        component={IncomingStack}
+        options={{headerShown: true, title: 'Transaksi Masuk'}}
       />
       <RootNavigation.Screen
-        name="OutgoingTransaction"
-        component={OutgoingTransaction}
-        options={{headerShown: false}}
+        name="OutgoingStack"
+        component={OutgoingStack}
+        options={{headerShown: true, title: 'Transaksi Keluar'}}
       />
     </RootNavigation.Navigator>
   );

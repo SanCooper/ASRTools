@@ -1,16 +1,17 @@
 import {View, Text, SafeAreaView, Pressable} from 'react-native';
 import React from 'react';
-import {DashboardProps} from './interface';
 import {Header} from '../../components/molecules';
+import {useNavigation} from '@react-navigation/native';
 
-const Dashboard: React.FC<DashboardProps> = props => {
-  const {navigation} = props;
+const Dashboard = () => {
+  // const {navigation} = props;
+  const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <Header.Basic title="DASHBOARD" />
       <View style={{flexDirection: 'row'}}>
         <Pressable
-          onPress={() => navigation.navigate('IncomingTransaction')}
+          onPress={() => navigation.navigate('IncomingStack')}
           style={{
             width: '50%',
             height: 200,
@@ -21,7 +22,7 @@ const Dashboard: React.FC<DashboardProps> = props => {
           <Text>Transaksi Masuk</Text>
         </Pressable>
         <Pressable
-          onPress={() => navigation.navigate('OutgoingTransaction')}
+          onPress={() => navigation.navigate('OutgoingStack')}
           style={{
             width: '50%',
             height: 200,
@@ -34,7 +35,7 @@ const Dashboard: React.FC<DashboardProps> = props => {
       </View>
       <View style={{flexDirection: 'row'}}>
         <Pressable
-          onPress={() => navigation.navigate('Employee')}
+          onPress={() => navigation.navigate('EmployeeStack')}
           style={{
             width: '50%',
             height: 200,

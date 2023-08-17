@@ -6,32 +6,24 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
-import {IncomingTransactionProps} from './interface';
-import {Header} from '../../components/molecules';
 import {Pallets} from '../../theme/';
 import {Button} from 'react-native-paper';
-// import DatePicker from 'react-native-date-picker';
+import DatePicker from 'react-native-date-picker';
 
-const IncomingTransaction: React.FC<IncomingTransactionProps> = props => {
-  const {navigation} = props;
-  // const [selectedDate, setSelectedDate] = React.useState<Date>('');
-  // const [open, setOpen] = React.useState<boolean>(false);
+const IncomingTransaction = () => {
+  const [modalVisible, setModalVisible] = React.useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = React.useState<string>('');
 
-  // const handleDateChange = (date: Date) => {
-  //   setSelectedDate(date);
-  // };
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date.toLocaleDateString('id-ID'));
+  };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-      <Header.Basic
-        title="Transaksi Masuk"
-        showBack={true}
-        backPress={() => navigation.goBack()}
-      />
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
           <TextInput
-            placeholder="Id"
+            placeholder="ID Transaksi Masuk"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
           />
@@ -39,6 +31,8 @@ const IncomingTransaction: React.FC<IncomingTransactionProps> = props => {
             placeholder="Tanggal Transaksi"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={selectedDate}
+            onPressIn={() => setModalVisible(true)}
           />
           <TextInput
             placeholder="Tipe HP"
@@ -80,27 +74,6 @@ const IncomingTransaction: React.FC<IncomingTransactionProps> = props => {
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
           />
-          {/* <DatePicker
-          style={{width: 200}}
-          date={selectedDate}
-          mode="date"
-          placeholder="Pilih tanggal"
-          format="DD-MM-YYYY"
-          confirmBtnText="OK"
-          cancelBtnText="Batal"
-          customStyles={{
-            dateIcon: {
-              position: 'absolute',
-              left: 0,
-              top: 4,
-              marginLeft: 0,
-            },
-            dateInput: {
-              marginLeft: 36,
-            },
-          }}
-          onDateChange={date => handleDateChange(date)}
-        /> */}
           <Button
             mode="contained"
             onPress={() => {}}
@@ -109,6 +82,19 @@ const IncomingTransaction: React.FC<IncomingTransactionProps> = props => {
           </Button>
         </KeyboardAvoidingView>
       </ScrollView>
+      <DatePicker
+        modal
+        open={modalVisible}
+        mode="date"
+        date={new Date()}
+        onConfirm={date => {
+          setModalVisible(false);
+          handleDateChange(date);
+        }}
+        onCancel={() => {
+          setModalVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -126,5 +112,25 @@ const styles = StyleSheet.create({
     paddingVertical: -5,
     marginTop: 16,
     height: 35,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 10,
+    height: '50%',
+    width: '90%',
   },
 });

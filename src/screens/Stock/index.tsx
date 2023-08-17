@@ -6,28 +6,21 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
-import {StockProps} from './interface';
-import {Header} from '../../components/molecules';
 import {Pallets} from '../../theme/';
 import {Button} from 'react-native-paper';
-// import DatePicker from 'react-native-date-picker';
+import DatePicker from 'react-native-date-picker';
 
-const Stock: React.FC<StockProps> = props => {
-  const {navigation} = props;
-  // const [selectedDate, setSelectedDate] = React.useState<Date>('');
-  // const [open, setOpen] = React.useState<boolean>(false);
+const Stock = () => {
+  // const navigation = useNavigation();
+  const [selectedDate, setSelectedDate] = React.useState<string>('');
+  const [modalVisible, setModalVisible] = React.useState<boolean>(false);
 
-  // const handleDateChange = (date: Date) => {
-  //   setSelectedDate(date);
-  // };
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date.toLocaleDateString('id-ID'));
+  };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-      <Header.Basic
-        title="Stock Barang"
-        showBack={true}
-        backPress={() => navigation.goBack()}
-      />
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
           <TextInput
@@ -39,11 +32,8 @@ const Stock: React.FC<StockProps> = props => {
             placeholder="Tanggal Masuk"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
-          />
-          <TextInput
-            placeholder="Tanggal Keluar"
-            placeholderTextColor={Pallets.netral_70}
-            style={styles.inputText}
+            value={selectedDate}
+            onPressIn={() => setModalVisible(true)}
           />
           <TextInput
             placeholder="Nama"
@@ -55,27 +45,6 @@ const Stock: React.FC<StockProps> = props => {
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
           />
-          {/* <DatePicker
-          style={{width: 200}}
-          date={selectedDate}
-          mode="date"
-          placeholder="Pilih tanggal"
-          format="DD-MM-YYYY"
-          confirmBtnText="OK"
-          cancelBtnText="Batal"
-          customStyles={{
-            dateIcon: {
-              position: 'absolute',
-              left: 0,
-              top: 4,
-              marginLeft: 0,
-            },
-            dateInput: {
-              marginLeft: 36,
-            },
-          }}
-          onDateChange={date => handleDateChange(date)}
-        /> */}
           <Button
             mode="contained"
             onPress={() => {}}
@@ -84,6 +53,19 @@ const Stock: React.FC<StockProps> = props => {
           </Button>
         </KeyboardAvoidingView>
       </ScrollView>
+      <DatePicker
+        modal
+        open={modalVisible}
+        mode="date"
+        date={new Date()}
+        onConfirm={date => {
+          setModalVisible(false);
+          handleDateChange(date);
+        }}
+        onCancel={() => {
+          setModalVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 };

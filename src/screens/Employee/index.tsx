@@ -6,14 +6,12 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
-import {EmployeeProps} from './interface';
-import {Header} from '../../components/molecules';
 import {Pallets} from '../../theme/';
 import {Button} from 'react-native-paper';
 // import DatePicker from 'react-native-date-picker';
 
-const Employee: React.FC<EmployeeProps> = props => {
-  const {navigation} = props;
+const Employee = () => {
+  // const {navigation} = props;
   // const [selectedDate, setSelectedDate] = React.useState<Date>('');
   // const [open, setOpen] = React.useState<boolean>(false);
 
@@ -23,11 +21,6 @@ const Employee: React.FC<EmployeeProps> = props => {
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-      <Header.Basic
-        title="Data Karyawan"
-        showBack={true}
-        backPress={() => navigation.goBack()}
-      />
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
           <TextInput

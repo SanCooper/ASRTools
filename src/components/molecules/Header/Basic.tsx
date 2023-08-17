@@ -36,6 +36,7 @@ const Basic = (props: Props) => {
           ? Pallets.transparent_0
           : Pallets.netral_10,
         elevation: !transparent ? 4 : 0,
+        height: 50,
       }}>
       {showBack && (
         <Appbar.BackAction
