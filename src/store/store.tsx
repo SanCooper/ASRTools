@@ -13,9 +13,12 @@ const initialState: AppState = {
 };
 
 const employeeReducer = (state = initialState, action: any) => {
+  console.log('action', action, 'state', state);
   switch (action.type) {
     case 'SET_EMPLOYEE_DATA':
       return {...state, dataEmployee: action.payload};
+    case 'INPUT_EMPLOYEE_DATA':
+      return {...state, dataEmployee: [...state.dataEmployee, action.payload]};
     default:
       return state;
   }

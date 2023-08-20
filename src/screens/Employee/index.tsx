@@ -18,30 +18,24 @@ interface Employee {
   jabatan: string;
   gaji: string;
   jenisKelamin: string;
+  timestamp: number;
 }
 
 const Employee = () => {
   const dispatch = useDispatch();
+  const [autoId, setAutoId] = React.useState<string>('');
   const [employee, setEmployee] = React.useState<Employee>({
-    idKaryawan: '',
+    idKaryawan: autoId,
     nama: '',
     jabatan: '',
     gaji: '',
     jenisKelamin: '',
+    timestamp: 0,
   });
   const toast = useToast();
   const dataEmployee = useSelector((state: RootState) => state.dataEmployee);
 
   const fetchData = React.useCallback(async () => {
-    // try {
-    //   const collectionRef = firestore().collection('Employee');
-    //   collectionRef.onSnapshot(snapshot => {
-    //     const dataArray = snapshot.docs.flatMap(doc => doc.data().karyawan);
-    //     setEmployeeData(dataArray);
-    //   });
-    // } catch (error) {
-    //   console.error('Error fetching data: ', error);
-    // }
     const itemsCollection = firestore().collection('Employee');
     const snapshot = await itemsCollection.get();
 
@@ -51,6 +45,8 @@ const Employee = () => {
         ...doc.data(),
       });
     });
+    // Sort the items array by timestamp
+    items.sort((a: any, b: any) => a.timestamp - b.timestamp);
     // setEmployeeData(items);
     console.log('item', items);
     dispatch({type: 'SET_EMPLOYEE_DATA', payload: items});
@@ -76,22 +72,57 @@ const Employee = () => {
         duration: 1500,
       });
     } else {
+      setEmployee(prevEmployee => ({
+        ...prevEmployee,
+        timestamp: new Date().getTime(),
+      }));
       try {
-        await firestore().collection('Employee').add(employee);
-        console.log('Employee added successfully!');
-        // Reset the form
-        setEmployee({
-          idKaryawan: '',
-          nama: '',
-          jabatan: '',
-          gaji: '',
-          jenisKelamin: '',
-        });
+        console.log('employe', employee);
+        // await firestore().collection('Employee').add(employee);
+        // dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
+        // console.log('Employee added successfully!');
+        // // Reset the form
+        // setEmployee({
+        //   idKaryawan: '',
+        //   nama: '',
+        //   jabatan: '',
+        //   gaji: '',
+        //   jenisKelamin: '',
+        //   timestamp: 0,
+        // });
       } catch (error) {
         console.error('Error adding employee: ', error);
       }
     }
   };
+
+  React.useEffect(() => {
+    if (dataEmployee.length > 0) {
+      // Given array
+      const array = dataEmployee.map(
+        (entry: {idKaryawan: any}) => entry.idKaryawan,
+      );
+
+      // Extract the last two strings
+      let lastTwoStrings = array.slice(-2);
+
+      // Extract numbers from the last two strings and convert to integers
+      let numbers = lastTwoStrings.map((item: string) =>
+        parseInt(item.substr(4)),
+      );
+
+      // Find the largest number
+      let largestNumber = Math.max(...numbers);
+
+      // Create the new element and format
+      let generatedId = `ASRK${(largestNumber + 1)
+        .toString()
+        .padStart(3, '0')}`;
+      setAutoId(generatedId);
+    } else {
+      setAutoId('ASRK0001');
+    }
+  }, [dataEmployee]);
 
   React.useEffect(() => {
     fetchData();
@@ -109,7 +140,7 @@ const Employee = () => {
             placeholder="Id Karyawan"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
-            value={employee.idKaryawan}
+            value={autoId}
             onChangeText={value => handleInputChange('idKaryawan', value)}
           />
           <TextInput
