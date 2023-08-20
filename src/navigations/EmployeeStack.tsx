@@ -33,6 +33,7 @@ const EmployeeStack = () => {
               </Text>
             );
           },
+          swipeEnabled: false,
           tabBarIndicatorStyle: {
             backgroundColor: Pallets.primary_main,
           },

@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import 'react-native-reanimated';
@@ -9,6 +8,8 @@ import {StyleSheet, Text, View} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
+import {Provider} from 'react-redux';
+import store from './src/store/store';
 
 const theme = {
   ...DefaultTheme,
@@ -24,78 +25,80 @@ const theme = {
 const App = () => {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
-      <PaperProvider theme={theme}>
-        <ToastProvider>
-          <Router />
-          <Toast
-            renderType={{
-              danger: toast => (
-                <View style={styles.toastContainer}>
-                  <View style={[styles.toastView, {backgroundColor: 'red'}]}>
-                    <MaterialCommunityIcons
-                      name="close"
-                      size={16}
-                      color="white"
-                    />
+      <Provider store={store}>
+        <PaperProvider theme={theme}>
+          <ToastProvider>
+            <Router />
+            <Toast
+              renderType={{
+                danger: toast => (
+                  <View style={styles.toastContainer}>
+                    <View style={[styles.toastView, {backgroundColor: 'red'}]}>
+                      <MaterialCommunityIcons
+                        name="close"
+                        size={16}
+                        color="white"
+                      />
+                    </View>
+                    <Text
+                      allowFontScaling={false}
+                      style={{
+                        color: '#f8110a',
+                        marginTop: -4,
+                      }}>
+                      {toast.message}
+                    </Text>
                   </View>
-                  <Text
-                    allowFontScaling={false}
-                    style={{
-                      color: '#f8110a',
-                      marginTop: -4,
-                    }}>
-                    {toast.message}
-                  </Text>
-                </View>
-              ),
-              warning: toast => (
-                <View style={styles.toastContainer}>
-                  <View
-                    style={[styles.toastView, {backgroundColor: '#f7d317'}]}>
-                    <Entypo name="warning" size={16} color="white" />
+                ),
+                warning: toast => (
+                  <View style={styles.toastContainer}>
+                    <View
+                      style={[styles.toastView, {backgroundColor: '#f7d317'}]}>
+                      <Entypo name="warning" size={16} color="white" />
+                    </View>
+                    <Text
+                      allowFontScaling={false}
+                      style={{
+                        color: '#f7d317',
+                        marginTop: -4,
+                      }}>
+                      {toast.message}
+                    </Text>
                   </View>
-                  <Text
-                    allowFontScaling={false}
-                    style={{
-                      color: '#f7d317',
-                      marginTop: -4,
-                    }}>
-                    {toast.message}
-                  </Text>
-                </View>
-              ),
-              success: toast => (
-                <View style={styles.toastContainer}>
-                  <View
-                    style={[styles.toastView, {backgroundColor: '#2fca58'}]}>
-                    <Entypo name="checkmark-sharp" size={16} color="white" />
+                ),
+                success: toast => (
+                  <View style={styles.toastContainer}>
+                    <View
+                      style={[styles.toastView, {backgroundColor: '#2fca58'}]}>
+                      <Entypo name="checkmark-sharp" size={16} color="white" />
+                    </View>
+                    <Text
+                      allowFontScaling={false}
+                      style={{
+                        color: 'black',
+                        marginTop: -4,
+                      }}>
+                      {toast.message}
+                    </Text>
                   </View>
-                  <Text
-                    allowFontScaling={false}
-                    style={{
-                      color: 'black',
-                      marginTop: -4,
-                    }}>
-                    {toast.message}
-                  </Text>
-                </View>
-              ),
-              normal: toast => (
-                <View style={styles.toastContainer}>
-                  <Text
-                    allowFontScaling={false}
-                    style={{
-                      color: 'black',
-                      marginTop: -4,
-                    }}>
-                    {toast.message}
-                  </Text>
-                </View>
-              ),
-            }}
-          />
-        </ToastProvider>
-      </PaperProvider>
+                ),
+                normal: toast => (
+                  <View style={styles.toastContainer}>
+                    <Text
+                      allowFontScaling={false}
+                      style={{
+                        color: 'black',
+                        marginTop: -4,
+                      }}>
+                      {toast.message}
+                    </Text>
+                  </View>
+                ),
+              }}
+            />
+          </ToastProvider>
+        </PaperProvider>
+      </Provider>
     </GestureHandlerRootView>
   );
 };
