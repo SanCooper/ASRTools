@@ -1,14 +1,9 @@
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme';
 import {Table, Row, TableWrapper, Cell} from 'react-native-reanimated-table';
 import Ionicon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
 
@@ -24,14 +19,32 @@ const EmployeeList = () => {
     '✎',
   ];
   const flexArr = [0.4, 1, 1, 1, 1, 1];
-  const dataEmployee = useSelector((state: RootState) => state.dataEmployee);
+  const dataEmployee = useSelector(
+    (state: RootState) => state.employee.dataEmployee,
+  );
 
   const buttonElement = (data: any) => (
-    <TouchableOpacity onPress={() => console.log(data)}>
-      <View style={{alignSelf: 'center', flex: 1}}>
-        <Ionicon name="settings" size={20} color={Pallets.primary_main} />
-      </View>
-    </TouchableOpacity>
+    <View
+      style={{
+        alignSelf: 'center',
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: 80,
+      }}>
+      <MaterialIcon
+        name="edit-square"
+        size={20}
+        color={'green'}
+        onPress={() => console.log('edit', data)}
+      />
+      <Ionicon
+        name="trash"
+        size={20}
+        color={Pallets.danger_main}
+        onPress={() => console.log('delete')}
+      />
+    </View>
   );
 
   return (
@@ -89,12 +102,12 @@ const EmployeeList = () => {
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={employee.gaji}
+                    data={employee.jenisKelamin}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={employee.jenisKelamin}
+                    data={employee.gaji}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />

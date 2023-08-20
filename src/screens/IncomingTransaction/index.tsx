@@ -3,20 +3,171 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
+  Text,
   KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme/';
 import {Button} from 'react-native-paper';
 import DatePicker from 'react-native-date-picker';
+import {useToast} from 'react-native-toast-notifications';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'src/store/store';
+import firestore from '@react-native-firebase/firestore';
+interface IncomingTransaction {
+  idPemasukan: string;
+  tanggalMasuk: string;
+  tipeHP: string;
+  noNota: string;
+  IMEI: string;
+  namaPelanggan: string;
+  kerusakan: string;
+  biaya: string;
+  hargaPart: string;
+  laba: string;
+  timestamp: number;
+}
 
 const IncomingTransaction = () => {
+  const dispatch = useDispatch();
+  const [autoId, setAutoId] = React.useState<string>('');
   const [modalVisible, setModalVisible] = React.useState<boolean>(false);
   const [selectedDate, setSelectedDate] = React.useState<string>('');
+  const [incoming, setIncoming] = React.useState<IncomingTransaction>({
+    idPemasukan: '',
+    tanggalMasuk: '',
+    tipeHP: '',
+    noNota: '',
+    IMEI: '',
+    namaPelanggan: '',
+    kerusakan: '',
+    biaya: '',
+    hargaPart: '',
+    laba: '',
+    timestamp: 0,
+  });
+  const toast = useToast();
+  const dataIncoming = useSelector(
+    (state: RootState) => state.incomingTransaction.dataIcTransaction,
+  );
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date.toLocaleDateString('id-ID'));
+    setIncoming(prevIncoming => ({
+      ...prevIncoming,
+      tanggalMasuk: date.toLocaleDateString('id-ID'),
+    }));
   };
+
+  const fetchData = React.useCallback(async () => {
+    const itemsCollection = firestore().collection('IncomingTransaction');
+    const snapshot = await itemsCollection.get();
+
+    const items: any = [];
+    snapshot.forEach(doc => {
+      items.push({
+        ...doc.data(),
+      });
+    });
+    // Sort the items array by timestamp
+    items.sort((a: any, b: any) => a.timestamp - b.timestamp);
+    // setIncomingData(items);
+    console.log('item', items);
+    dispatch({type: 'SET_INCOMING_DATA', payload: items});
+  }, [dispatch]);
+
+  const handleInputChange = (
+    field: keyof IncomingTransaction,
+    value: string,
+  ) => {
+    setIncoming(prevIncoming => ({
+      ...prevIncoming,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    generateAutoId();
+    setIncoming(prevIncoming => ({
+      ...prevIncoming,
+      tanggalMasuk: selectedDate,
+    }));
+    console.log('icnosdaj', incoming);
+    if (
+      incoming.idPemasukan === '' ||
+      incoming.tanggalMasuk === '' ||
+      incoming.tipeHP === '' ||
+      incoming.noNota === '' ||
+      incoming.namaPelanggan === '' ||
+      incoming.laba === ''
+    ) {
+      toast.show('Kolom input tidak boleh kosong!', {
+        type: 'danger',
+        duration: 1500,
+      });
+    } else {
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        timestamp: new Date().getTime(),
+      }));
+      try {
+        // console.log('employe', incoming);
+        await firestore().collection('IncomingTransaction').add(incoming);
+        dispatch({type: 'INPUT_INCOMING_DATA', payload: incoming});
+        toast.show('Berhasil menambah data', {type: 'success'});
+        // Reset the form
+        generateAutoId();
+        setIncoming({
+          idPemasukan: '',
+          tanggalMasuk: selectedDate,
+          tipeHP: '',
+          noNota: '',
+          IMEI: '',
+          namaPelanggan: '',
+          kerusakan: '',
+          biaya: '',
+          hargaPart: '',
+          laba: '',
+          timestamp: 0,
+        });
+      } catch (error) {
+        console.error('Error adding incoming: ', error);
+      }
+    }
+  };
+
+  const generateAutoId = React.useCallback(() => {
+    console.log('generate');
+    if (dataIncoming.length > 0) {
+      const array = dataIncoming.map(
+        (entry: {idPemasukan: any}) => entry.idPemasukan,
+      );
+      const lastTwoDigits = array.map((id: string) =>
+        parseInt(id.slice(-2), 10),
+      );
+      // Find the largest last two digits
+      const largestLastTwoDigits = Math.max(...lastTwoDigits);
+
+      // Increment the largest last two digits and format the new ID
+      const newIdNumber = largestLastTwoDigits + 1;
+      const newId = `PM${newIdNumber.toString().padStart(3, '0')}`;
+      setAutoId(newId);
+    } else {
+      setAutoId('PM001');
+    }
+  }, [dataIncoming]);
+
+  React.useEffect(() => {
+    generateAutoId();
+  }, [generateAutoId]);
+
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  React.useEffect(() => {
+    console.log('dataincoming', dataIncoming);
+  }, [dataIncoming]);
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -26,57 +177,81 @@ const IncomingTransaction = () => {
             placeholder="ID Transaksi Masuk"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            editable={false}
+            value={autoId}
+            onChangeText={value => handleInputChange('idPemasukan', value)}
           />
-          <TextInput
-            placeholder="Tanggal Transaksi"
-            placeholderTextColor={Pallets.netral_70}
-            style={styles.inputText}
-            value={selectedDate}
-            onPressIn={() => setModalVisible(true)}
-          />
+          <Text
+            style={[
+              styles.inputText,
+              {
+                color: selectedDate === '' ? Pallets.netral_70 : Pallets.black,
+                paddingTop: 7,
+              },
+            ]}
+            onPress={() => setModalVisible(!modalVisible)}>
+            {selectedDate !== '' ? selectedDate : 'Tanggal Transaksi'}
+          </Text>
           <TextInput
             placeholder="Tipe HP"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.tipeHP}
+            onChangeText={value => handleInputChange('tipeHP', value)}
           />
           <TextInput
             placeholder="No Nota"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.noNota}
+            inputMode="numeric"
+            onChangeText={value => handleInputChange('noNota', value)}
           />
           <TextInput
             placeholder="IMEI"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.IMEI}
+            onChangeText={value => handleInputChange('IMEI', value)}
           />
           <TextInput
             placeholder="Nama Pelanggan"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.namaPelanggan}
+            onChangeText={value => handleInputChange('namaPelanggan', value)}
           />
           <TextInput
             placeholder="Kerusakan"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.kerusakan}
+            onChangeText={value => handleInputChange('kerusakan', value)}
           />
           <TextInput
             placeholder="Biaya"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.biaya}
+            onChangeText={value => handleInputChange('biaya', value)}
           />
           <TextInput
             placeholder="Harga Part"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.hargaPart}
+            onChangeText={value => handleInputChange('hargaPart', value)}
           />
           <TextInput
             placeholder="Laba"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            value={incoming.laba}
+            onChangeText={value => handleInputChange('laba', value)}
           />
           <Button
             mode="contained"
-            onPress={() => {}}
+            onPress={handleSubmit}
             style={{borderRadius: 10, marginTop: 16}}>
             SIMPAN
           </Button>
@@ -86,13 +261,15 @@ const IncomingTransaction = () => {
         modal
         open={modalVisible}
         mode="date"
+        title={'Pilih Tanggal'}
+        locale="id-ID"
         date={new Date()}
         onConfirm={date => {
-          setModalVisible(false);
+          setModalVisible(!modalVisible);
           handleDateChange(date);
         }}
         onCancel={() => {
-          setModalVisible(false);
+          setModalVisible(!modalVisible);
         }}
       />
     </SafeAreaView>

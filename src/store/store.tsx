@@ -1,19 +1,21 @@
-// src/store/store.ts
-
 import {createStore} from 'redux';
+import {combineReducers} from 'redux';
 
 // Define the initial state and action types
 interface AppState {
   dataEmployee: any[]; // Change this type according to your employee data structure
+  dataIcTransaction: any[];
+  dataOgTransaction: any[];
 }
 
 // Define actions and reducers
 const initialState: AppState = {
   dataEmployee: [],
+  dataIcTransaction: [],
+  dataOgTransaction: [],
 };
 
 const employeeReducer = (state = initialState, action: any) => {
-  console.log('action', action, 'state', state);
   switch (action.type) {
     case 'SET_EMPLOYEE_DATA':
       return {...state, dataEmployee: action.payload};
@@ -24,10 +26,29 @@ const employeeReducer = (state = initialState, action: any) => {
   }
 };
 
+const incomingTrReducer = (state = initialState, action: any) => {
+  switch (action.type) {
+    case 'SET_INCOMING_DATA':
+      return {...state, dataIcTransaction: action.payload};
+    case 'INPUT_INCOMING_DATA':
+      return {
+        ...state,
+        dataIcTransaction: [...state.dataIcTransaction, action.payload],
+      };
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  employee: employeeReducer,
+  incomingTransaction: incomingTrReducer,
+});
+
 // Create the Redux store
-const store = createStore(employeeReducer);
+const store = createStore(rootReducer);
 
 // Define RootState type
-export type RootState = ReturnType<typeof employeeReducer>;
+export type RootState = ReturnType<typeof rootReducer>;
 
 export default store;

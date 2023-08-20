@@ -18,7 +18,7 @@ interface Employee {
   jabatan: string;
   gaji: string;
   jenisKelamin: string;
-  timestamp: number;
+  timestamp: any;
 }
 
 const Employee = () => {
@@ -30,10 +30,12 @@ const Employee = () => {
     jabatan: '',
     gaji: '',
     jenisKelamin: '',
-    timestamp: 0,
+    timestamp: new Date().getTime(),
   });
   const toast = useToast();
-  const dataEmployee = useSelector((state: RootState) => state.dataEmployee);
+  const dataEmployee = useSelector(
+    (state: RootState) => state.employee.dataEmployee,
+  );
 
   const fetchData = React.useCallback(async () => {
     const itemsCollection = firestore().collection('Employee');
@@ -59,7 +61,21 @@ const Employee = () => {
     }));
   };
 
+  const beforeHandle = async () => {
+    try {
+      await generateAutoId();
+      setTimeout(handleSubmit, 500);
+    } catch (error) {
+      console.log('Error generate id', error);
+    }
+  };
+
   const handleSubmit = async () => {
+    generateAutoId();
+    setEmployee(prevEmployee => ({
+      ...prevEmployee,
+      idKaryawan: autoId,
+    }));
     if (
       employee.idKaryawan === '' ||
       employee.nama === '' ||
@@ -76,61 +92,56 @@ const Employee = () => {
         ...prevEmployee,
         timestamp: new Date().getTime(),
       }));
+      console.log('incoming', employee);
       try {
-        console.log('employe', employee);
-        // await firestore().collection('Employee').add(employee);
-        // dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
-        // console.log('Employee added successfully!');
-        // // Reset the form
-        // setEmployee({
-        //   idKaryawan: '',
-        //   nama: '',
-        //   jabatan: '',
-        //   gaji: '',
-        //   jenisKelamin: '',
-        //   timestamp: 0,
-        // });
+        // console.log('employe', employee);
+        await firestore().collection('Employee').add(employee);
+        dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
+        toast.show('Berhasil menambah data', {type: 'success'});
+        generateAutoId();
+        // Reset the form
+        setEmployee({
+          idKaryawan: autoId,
+          nama: '',
+          jabatan: '',
+          gaji: '',
+          jenisKelamin: '',
+          timestamp: 0,
+        });
       } catch (error) {
         console.error('Error adding employee: ', error);
       }
     }
   };
 
-  React.useEffect(() => {
+  const generateAutoId = React.useCallback(() => {
     if (dataEmployee.length > 0) {
-      // Given array
       const array = dataEmployee.map(
         (entry: {idKaryawan: any}) => entry.idKaryawan,
       );
-
-      // Extract the last two strings
-      let lastTwoStrings = array.slice(-2);
-
-      // Extract numbers from the last two strings and convert to integers
-      let numbers = lastTwoStrings.map((item: string) =>
-        parseInt(item.substr(4)),
+      const lastTwoDigits = array.map((id: string) =>
+        parseInt(id.slice(-2), 10),
       );
+      // Find the largest last two digits
+      const largestLastTwoDigits = Math.max(...lastTwoDigits);
 
-      // Find the largest number
-      let largestNumber = Math.max(...numbers);
-
-      // Create the new element and format
-      let generatedId = `ASRK${(largestNumber + 1)
-        .toString()
-        .padStart(3, '0')}`;
-      setAutoId(generatedId);
+      // Increment the largest last two digits and format the new ID
+      const newIdNumber = largestLastTwoDigits + 1;
+      const newId = `KY${newIdNumber.toString().padStart(3, '0')}`;
+      setAutoId(newId);
     } else {
-      setAutoId('ASRK0001');
+      setAutoId('KY001');
     }
   }, [dataEmployee]);
 
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    generateAutoId();
+    console.log('date', new Date().getTime());
+  }, [generateAutoId]);
 
   React.useEffect(() => {
-    console.log('data employee', dataEmployee);
-  }, [dataEmployee]);
+    fetchData();
+  }, [fetchData]);
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -140,8 +151,8 @@ const Employee = () => {
             placeholder="Id Karyawan"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            editable={false}
             value={autoId}
-            onChangeText={value => handleInputChange('idKaryawan', value)}
           />
           <TextInput
             placeholder="Nama"
@@ -173,7 +184,7 @@ const Employee = () => {
           />
           <Button
             mode="contained"
-            onPress={handleSubmit}
+            onPress={beforeHandle}
             style={{borderRadius: 10, marginTop: 16}}>
             SIMPAN
           </Button>
