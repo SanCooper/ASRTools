@@ -72,7 +72,6 @@ const IncomingTransaction = () => {
     // Sort the items array by timestamp
     items.sort((a: any, b: any) => a.timestamp - b.timestamp);
     // setIncomingData(items);
-    console.log('item', items);
     dispatch({type: 'SET_INCOMING_DATA', payload: items});
   }, [dispatch]);
 
@@ -87,12 +86,10 @@ const IncomingTransaction = () => {
   };
 
   const handleSubmit = async () => {
-    generateAutoId();
     setIncoming(prevIncoming => ({
       ...prevIncoming,
       tanggalMasuk: selectedDate,
     }));
-    console.log('icnosdaj', incoming);
     if (
       incoming.idPemasukan === '' ||
       incoming.tanggalMasuk === '' ||
@@ -116,7 +113,7 @@ const IncomingTransaction = () => {
         dispatch({type: 'INPUT_INCOMING_DATA', payload: incoming});
         toast.show('Berhasil menambah data', {type: 'success'});
         // Reset the form
-        generateAutoId();
+        setAutoId('');
         setIncoming({
           idPemasukan: '',
           tanggalMasuk: selectedDate,
@@ -137,7 +134,6 @@ const IncomingTransaction = () => {
   };
 
   const generateAutoId = React.useCallback(() => {
-    console.log('generate');
     if (dataIncoming.length > 0) {
       const array = dataIncoming.map(
         (entry: {idPemasukan: any}) => entry.idPemasukan,
@@ -152,35 +148,60 @@ const IncomingTransaction = () => {
       const newIdNumber = largestLastTwoDigits + 1;
       const newId = `PM${newIdNumber.toString().padStart(3, '0')}`;
       setAutoId(newId);
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        idPemasukan: newId,
+      }));
+      const dateTimestamp = new Date().getTime();
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        timestamp: dateTimestamp,
+      }));
     } else {
       setAutoId('PM001');
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        idPemasukan: 'PM001',
+      }));
+      const dateTimestamp = new Date().getTime();
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        timestamp: dateTimestamp,
+      }));
     }
   }, [dataIncoming]);
 
-  React.useEffect(() => {
-    generateAutoId();
-  }, [generateAutoId]);
+  // React.useEffect(() => {
+  //   generateAutoId();
+  // }, [generateAutoId]);
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  React.useEffect(() => {
-    console.log('dataincoming', dataIncoming);
-  }, [dataIncoming]);
-
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
-          <TextInput
+          {/* <TextInput
             placeholder="ID Transaksi Masuk"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
             editable={false}
             value={autoId}
             onChangeText={value => handleInputChange('idPemasukan', value)}
-          />
+          /> */}
+          <Text
+            style={[
+              styles.inputText,
+              {
+                color: autoId === '' ? Pallets.netral_70 : Pallets.black,
+                paddingTop: 7,
+              },
+            ]}
+            onPress={() => generateAutoId()}>
+            {autoId !== '' ? autoId : 'ID Transaksi Masuk'}
+          </Text>
           <Text
             style={[
               styles.inputText,

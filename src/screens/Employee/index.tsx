@@ -3,6 +3,7 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
+  Text,
   KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
@@ -50,7 +51,6 @@ const Employee = () => {
     // Sort the items array by timestamp
     items.sort((a: any, b: any) => a.timestamp - b.timestamp);
     // setEmployeeData(items);
-    console.log('item', items);
     dispatch({type: 'SET_EMPLOYEE_DATA', payload: items});
   }, [dispatch]);
 
@@ -61,17 +61,7 @@ const Employee = () => {
     }));
   };
 
-  const beforeHandle = async () => {
-    try {
-      await generateAutoId();
-      setTimeout(handleSubmit, 500);
-    } catch (error) {
-      console.log('Error generate id', error);
-    }
-  };
-
   const handleSubmit = async () => {
-    generateAutoId();
     setEmployee(prevEmployee => ({
       ...prevEmployee,
       idKaryawan: autoId,
@@ -92,14 +82,13 @@ const Employee = () => {
         ...prevEmployee,
         timestamp: new Date().getTime(),
       }));
-      console.log('incoming', employee);
       try {
         // console.log('employe', employee);
         await firestore().collection('Employee').add(employee);
         dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
         toast.show('Berhasil menambah data', {type: 'success'});
-        generateAutoId();
         // Reset the form
+        setAutoId('');
         setEmployee({
           idKaryawan: autoId,
           nama: '',
@@ -129,15 +118,32 @@ const Employee = () => {
       const newIdNumber = largestLastTwoDigits + 1;
       const newId = `KY${newIdNumber.toString().padStart(3, '0')}`;
       setAutoId(newId);
+      setEmployee(prevEmployee => ({
+        ...prevEmployee,
+        idKaryawan: newId,
+      }));
+      const dateTimestamp = new Date().getTime();
+      setEmployee(prevEmployee => ({
+        ...prevEmployee,
+        timestamp: dateTimestamp,
+      }));
     } else {
       setAutoId('KY001');
+      setEmployee(prevEmployee => ({
+        ...prevEmployee,
+        idKaryawan: 'KY001',
+      }));
+      const dateTimestamp = new Date().getTime();
+      setEmployee(prevEmployee => ({
+        ...prevEmployee,
+        timestamp: dateTimestamp,
+      }));
     }
   }, [dataEmployee]);
 
-  React.useEffect(() => {
-    generateAutoId();
-    console.log('date', new Date().getTime());
-  }, [generateAutoId]);
+  // React.useEffect(() => {
+  //   generateAutoId();
+  // }, [generateAutoId]);
 
   React.useEffect(() => {
     fetchData();
@@ -147,13 +153,24 @@ const Employee = () => {
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
-          <TextInput
+          {/* <TextInput
             placeholder="Id Karyawan"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
             editable={false}
             value={autoId}
-          />
+          /> */}
+          <Text
+            style={[
+              styles.inputText,
+              {
+                color: autoId === '' ? Pallets.netral_70 : Pallets.black,
+                paddingTop: 7,
+              },
+            ]}
+            onPress={() => generateAutoId()}>
+            {autoId !== '' ? autoId : 'ID Karyawan'}
+          </Text>
           <TextInput
             placeholder="Nama"
             placeholderTextColor={Pallets.netral_70}
@@ -184,7 +201,7 @@ const Employee = () => {
           />
           <Button
             mode="contained"
-            onPress={beforeHandle}
+            onPress={handleSubmit}
             style={{borderRadius: 10, marginTop: 16}}>
             SIMPAN
           </Button>

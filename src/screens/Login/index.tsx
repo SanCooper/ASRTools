@@ -14,7 +14,7 @@ import {LoginProps} from './interface';
 const Login: React.FC<LoginProps> = props => {
   const {navigation} = props;
   const toast = useToast();
-  const theme = useTheme();
+  // const theme = useTheme();
   // const dispatch = useDispatch();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -47,19 +47,33 @@ const Login: React.FC<LoginProps> = props => {
               type: 'success',
               duration: 2000,
             });
-            console.log('user ', user.uid);
+            // console.log('user ', user.uid);
             // dispatch(setUserUID(user.uid));
             // saveDataToAsyncStorage(user.uid);
-            // navigation.navigate('Home');
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Dashboard'}],
+            });
           }
           if (user.emailVerified === false) {
-            toast.show(
-              'Email belum terverifikasi. Silahkan periksa email anda!',
-              {
-                type: 'warning',
-                duration: 2000,
-              },
-            );
+            toast.show('Login berhasil!', {
+              type: 'success',
+              duration: 2000,
+            });
+            // console.log('user ', user.uid);
+            // dispatch(setUserUID(user.uid));
+            // saveDataToAsyncStorage(user.uid);
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Dashboard'}],
+            });
+            // toast.show(
+            //   'Email belum terverifikasi. Silahkan periksa email anda!',
+            //   {
+            //     type: 'warning',
+            //     duration: 2000,
+            //   },
+            // );
           }
         })
         .catch(error => {
@@ -127,7 +141,7 @@ const Login: React.FC<LoginProps> = props => {
           style={{borderRadius: 10}}>
           Login
         </Button>
-        <View
+        {/* <View
           style={{
             flexDirection: 'row',
             marginTop: 10,
@@ -138,7 +152,7 @@ const Login: React.FC<LoginProps> = props => {
             onPress={() => navigation.navigate('Dashboard')}>
             Ke Dashboard
           </Text>
-        </View>
+        </View> */}
         {/* <View
           style={{
             flexDirection: 'row',

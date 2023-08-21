@@ -40,9 +40,24 @@ const incomingTrReducer = (state = initialState, action: any) => {
   }
 };
 
+const outgoingTrReducer = (state = initialState, action: any) => {
+  switch (action.type) {
+    case 'SET_OUTGOING_DATA':
+      return {...state, dataOgTransaction: action.payload};
+    case 'INPUT_OUTGOING_DATA':
+      return {
+        ...state,
+        dataOgTransaction: [...state.dataOgTransaction, action.payload],
+      };
+    default:
+      return state;
+  }
+};
+
 const rootReducer = combineReducers({
   employee: employeeReducer,
   incomingTransaction: incomingTrReducer,
+  outgoingTransaction: outgoingTrReducer,
 });
 
 // Create the Redux store

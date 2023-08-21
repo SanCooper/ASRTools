@@ -11,7 +11,7 @@ const RootNavigation = createNativeStackNavigator<RootStackParamList>();
 const RootStack = () => {
   return (
     <RootNavigation.Navigator
-      initialRouteName="Dashboard"
+      initialRouteName="Login"
       screenOptions={{headerShown: false}}>
       <RootNavigation.Screen
         name="Dashboard"
