@@ -6,6 +6,7 @@ interface AppState {
   dataEmployee: any[]; // Change this type according to your employee data structure
   dataIcTransaction: any[];
   dataOgTransaction: any[];
+  dataStock: any[];
 }
 
 // Define actions and reducers
@@ -13,6 +14,7 @@ const initialState: AppState = {
   dataEmployee: [],
   dataIcTransaction: [],
   dataOgTransaction: [],
+  dataStock: [],
 };
 
 const employeeReducer = (state = initialState, action: any) => {
@@ -21,6 +23,13 @@ const employeeReducer = (state = initialState, action: any) => {
       return {...state, dataEmployee: action.payload};
     case 'INPUT_EMPLOYEE_DATA':
       return {...state, dataEmployee: [...state.dataEmployee, action.payload]};
+    case 'DELETE_EMPLOYEE_DATA':
+      return {
+        ...state,
+        dataEmployee: state.dataEmployee.filter(
+          item => item.idKaryawan !== action.payload,
+        ),
+      };
     default:
       return state;
   }
@@ -34,6 +43,13 @@ const incomingTrReducer = (state = initialState, action: any) => {
       return {
         ...state,
         dataIcTransaction: [...state.dataIcTransaction, action.payload],
+      };
+    case 'DELETE_INCOMING_DATA':
+      return {
+        ...state,
+        dataIcTransaction: state.dataIcTransaction.filter(
+          item => item.idPemasukan !== action.payload,
+        ),
       };
     default:
       return state;
@@ -54,10 +70,25 @@ const outgoingTrReducer = (state = initialState, action: any) => {
   }
 };
 
+const StockReducer = (state = initialState, action: any) => {
+  switch (action.type) {
+    case 'SET_STOCK_DATA':
+      return {...state, dataStock: action.payload};
+    case 'INPUT_STOCK_DATA':
+      return {
+        ...state,
+        dataStock: [...state.dataStock, action.payload],
+      };
+    default:
+      return state;
+  }
+};
+
 const rootReducer = combineReducers({
   employee: employeeReducer,
   incomingTransaction: incomingTrReducer,
   outgoingTransaction: outgoingTrReducer,
+  stock: StockReducer,
 });
 
 // Create the Redux store

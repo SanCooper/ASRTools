@@ -1,7 +1,7 @@
 import {firebase} from '@react-native-firebase/auth';
 import React, {useState} from 'react';
 import {View} from 'react-native';
-import {TextInput, Button, Text, useTheme} from 'react-native-paper';
+import {TextInput, Button, Text} from 'react-native-paper';
 // import {LoginProps} from './inteface';
 import {useToast} from 'react-native-toast-notifications';
 import {LoginProps} from './interface';

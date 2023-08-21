@@ -95,7 +95,8 @@ const IncomingTransaction = () => {
       incoming.tanggalMasuk === '' ||
       incoming.tipeHP === '' ||
       incoming.noNota === '' ||
-      incoming.namaPelanggan === '' ||
+      incoming.kerusakan === '' ||
+      incoming.biaya === '' ||
       incoming.laba === ''
     ) {
       toast.show('Kolom input tidak boleh kosong!', {
@@ -143,7 +144,6 @@ const IncomingTransaction = () => {
       );
       // Find the largest last two digits
       const largestLastTwoDigits = Math.max(...lastTwoDigits);
-
       // Increment the largest last two digits and format the new ID
       const newIdNumber = largestLastTwoDigits + 1;
       const newId = `PM${newIdNumber.toString().padStart(3, '0')}`;
@@ -170,6 +170,20 @@ const IncomingTransaction = () => {
       }));
     }
   }, [dataIncoming]);
+
+  const getLaba = () => {
+    if (incoming.biaya === '') {
+      return;
+    } else {
+      const laba =
+        (incoming.biaya as unknown as number) -
+        (incoming.hargaPart as unknown as number);
+      setIncoming(prevIncoming => ({
+        ...prevIncoming,
+        laba: laba as unknown as string,
+      }));
+    }
+  };
 
   // React.useEffect(() => {
   //   generateAutoId();
@@ -254,22 +268,36 @@ const IncomingTransaction = () => {
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
             value={incoming.biaya}
+            inputMode="numeric"
             onChangeText={value => handleInputChange('biaya', value)}
           />
           <TextInput
             placeholder="Harga Part"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
+            inputMode="numeric"
             value={incoming.hargaPart}
             onChangeText={value => handleInputChange('hargaPart', value)}
           />
-          <TextInput
+          {/* <TextInput
             placeholder="Laba"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
             value={incoming.laba}
+            inputMode="numeric"
             onChangeText={value => handleInputChange('laba', value)}
-          />
+          /> */}
+          <Text
+            style={[
+              styles.inputText,
+              {
+                color: incoming.laba === '' ? Pallets.netral_70 : Pallets.black,
+                paddingTop: 7,
+              },
+            ]}
+            onPress={() => getLaba()}>
+            {incoming.laba !== '' ? incoming.laba : 'Laba'}
+          </Text>
           <Button
             mode="contained"
             onPress={handleSubmit}
@@ -284,6 +312,7 @@ const IncomingTransaction = () => {
         mode="date"
         title={'Pilih Tanggal'}
         locale="id-ID"
+        maximumDate={new Date()}
         date={new Date()}
         onConfirm={date => {
           setModalVisible(!modalVisible);

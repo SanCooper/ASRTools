@@ -46,7 +46,7 @@ const Dashboard = () => {
           <Text>Data Karyawan</Text>
         </Pressable>
         <Pressable
-          onPress={() => navigation.navigate('Report')}
+          onPress={() => navigation.navigate('Stock')}
           style={{
             width: '50%',
             height: 200,
@@ -54,7 +54,7 @@ const Dashboard = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text>Laporan</Text>
+          <Text>Stock Barang</Text>
         </Pressable>
       </View>
       <View style={{flexDirection: 'row'}}>
@@ -70,15 +70,15 @@ const Dashboard = () => {
           <Text>Transaksi</Text>
         </Pressable> */}
         <Pressable
-          onPress={() => navigation.navigate('Stock')}
+          onPress={() => navigation.navigate('Report')}
           style={{
             width: '50%',
             height: 200,
-            backgroundColor: 'blue',
+            backgroundColor: 'brown',
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text>Stock Barang</Text>
+          <Text>Laporan</Text>
         </Pressable>
       </View>
       <View style={{flex: 1, justifyContent: 'flex-end', marginBottom: 5}}>
