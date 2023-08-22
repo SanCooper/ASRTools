@@ -65,6 +65,13 @@ const outgoingTrReducer = (state = initialState, action: any) => {
         ...state,
         dataOgTransaction: [...state.dataOgTransaction, action.payload],
       };
+    case 'DELETE_OUTGOING_DATA':
+      return {
+        ...state,
+        dataOgTransaction: state.dataOgTransaction.filter(
+          item => item.idPengeluaran !== action.payload,
+        ),
+      };
     default:
       return state;
   }

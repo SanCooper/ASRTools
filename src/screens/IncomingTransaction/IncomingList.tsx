@@ -198,19 +198,6 @@ const IncomingList = () => {
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
-                  {/* <Row
-                      data={[
-                        employee.tanggalMasuk,
-                        employee.Nama,
-                        employee.Jabatan,
-                        employee.Gaji,
-                        employee.JenisKelamin,
-                        '',
-                      ]}
-                      textStyle={styles.text}
-                      style={{height: 40, width: 500}}
-                      flexArr={flexArr}
-                    /> */}
                 </TableWrapper>
               ),
             )}

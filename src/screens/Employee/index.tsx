@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   KeyboardAvoidingView,
+  TouchableOpacity,
 } from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme/';
@@ -13,25 +14,27 @@ import firestore from '@react-native-firebase/firestore';
 import {useToast} from 'react-native-toast-notifications';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
+import {Dropdown} from '../../components/atoms';
 interface Employee {
   idKaryawan: string;
   nama: string;
   jabatan: string;
-  gaji: string;
+  gaji: number;
   jenisKelamin: string;
-  timestamp: any;
+  timestamp: number;
 }
 
 const Employee = () => {
   const dispatch = useDispatch();
   const [autoId, setAutoId] = React.useState<string>('');
+  const [genderModal, setGenderModal] = React.useState<boolean>(false);
   const [employee, setEmployee] = React.useState<Employee>({
     idKaryawan: autoId,
     nama: '',
     jabatan: '',
-    gaji: '',
+    gaji: 0,
     jenisKelamin: '',
-    timestamp: new Date().getTime(),
+    timestamp: 0,
   });
   const toast = useToast();
   const dataEmployee = useSelector(
@@ -62,26 +65,18 @@ const Employee = () => {
   };
 
   const handleSubmit = async () => {
-    setEmployee(prevEmployee => ({
-      ...prevEmployee,
-      idKaryawan: autoId,
-    }));
     if (
       employee.idKaryawan === '' ||
       employee.nama === '' ||
       employee.jabatan === '' ||
       employee.jenisKelamin === '' ||
-      employee.gaji === ''
+      employee.gaji === 0
     ) {
       toast.show('Kolom input tidak boleh kosong!', {
         type: 'danger',
         duration: 1500,
       });
     } else {
-      setEmployee(prevEmployee => ({
-        ...prevEmployee,
-        timestamp: new Date().getTime(),
-      }));
       try {
         // console.log('employe', employee);
         await firestore().collection('Employee').add(employee);
@@ -93,7 +88,7 @@ const Employee = () => {
           idKaryawan: autoId,
           nama: '',
           jabatan: '',
-          gaji: '',
+          gaji: 0,
           jenisKelamin: '',
           timestamp: 0,
         });
@@ -141,9 +136,43 @@ const Employee = () => {
     }
   }, [dataEmployee]);
 
-  // React.useEffect(() => {
-  //   generateAutoId();
-  // }, [generateAutoId]);
+  // eslint-disable-next-line react/no-unstable-nested-components
+  const GenderContent = () => (
+    <>
+      <TouchableOpacity
+        onPress={() => {
+          setEmployee(prevEmployee => ({
+            ...prevEmployee,
+            jenisKelamin: 'Laki-laki',
+          }));
+          setGenderModal(!genderModal);
+        }}
+        style={[
+          styles.genderContainer,
+          {
+            backgroundColor: Pallets.white,
+          },
+        ]}>
+        <Text style={{color: Pallets.black}}>Laki-laki</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setEmployee(prevEmployee => ({
+            ...prevEmployee,
+            jenisKelamin: 'Perempuan',
+          }));
+          setGenderModal(!genderModal);
+        }}
+        style={[
+          styles.genderContainer,
+          {
+            backgroundColor: Pallets.white,
+          },
+        ]}>
+        <Text style={{color: Pallets.black}}>Perempuan</Text>
+      </TouchableOpacity>
+    </>
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -153,13 +182,6 @@ const Employee = () => {
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <ScrollView style={{marginHorizontal: 16, paddingBottom: 50}}>
         <KeyboardAvoidingView>
-          {/* <TextInput
-            placeholder="Id Karyawan"
-            placeholderTextColor={Pallets.netral_70}
-            style={styles.inputText}
-            editable={false}
-            value={autoId}
-          /> */}
           <Text
             style={[
               styles.inputText,
@@ -185,18 +207,33 @@ const Employee = () => {
             value={employee.jabatan}
             onChangeText={value => handleInputChange('jabatan', value)}
           />
-          <TextInput
+          {/* <TextInput
             placeholder="Jenis Kelamin"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
             value={employee.jenisKelamin}
             onChangeText={value => handleInputChange('jenisKelamin', value)}
+          /> */}
+          <Dropdown
+            label={
+              employee.jenisKelamin !== ''
+                ? employee.jenisKelamin
+                : 'Jenis Kelamin'
+            }
+            textColor={
+              employee.jenisKelamin === '' ? Pallets.netral_70 : Pallets.black
+            }
+            dropdownContent={<GenderContent />}
+            style={styles.inputText}
+            visible={genderModal}
+            setVisible={setGenderModal}
           />
           <TextInput
             placeholder="Gaji"
             placeholderTextColor={Pallets.netral_70}
             style={styles.inputText}
-            value={employee.gaji}
+            value={employee.gaji === 0 ? '' : employee.gaji.toString()}
+            inputMode="numeric"
             onChangeText={value => handleInputChange('gaji', value)}
           />
           <Button
@@ -224,5 +261,9 @@ const styles = StyleSheet.create({
     paddingVertical: -5,
     marginTop: 16,
     height: 35,
+  },
+  genderContainer: {
+    padding: 12,
+    borderRadius: 6,
   },
 });
