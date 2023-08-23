@@ -7,9 +7,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
 import firestore from '@react-native-firebase/firestore';
+import {useNavigation} from '@react-navigation/native';
 
 const IncomingList = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<any>();
   const tableHead = [
     'No',
     'ID Pemasukan',
@@ -72,6 +74,34 @@ const IncomingList = () => {
     );
   };
 
+  const editConfirmation = (data: any) => {
+    Alert.alert(
+      'Konfirmasi',
+      `Yakin ingin edit data dengan id ${data.idPemasukan}?`,
+      [
+        {text: 'Batal', style: 'cancel'},
+        {
+          text: 'Ya',
+          onPress: () =>
+            navigation.navigate('EditIncoming', {
+              idPemasukan: data.idPemasukan,
+              tanggalMasuk: data.tanggalMasuk,
+              tipeHP: data.tipeHP,
+              noNota: data.noNota,
+              IMEI: data.IMEI,
+              namaPelanggan: data.namaPelanggan,
+              kerusakan: data.kerusakan,
+              biaya: data.biaya,
+              hargaPart: data.hargaPart,
+              laba: data.laba,
+              timestamp: data.timestamp,
+            }),
+        },
+      ],
+      {cancelable: true},
+    );
+  };
+
   const buttonElement = (data: any) => (
     <View
       style={{
@@ -85,7 +115,7 @@ const IncomingList = () => {
         name="edit-square"
         size={20}
         color={'green'}
-        onPress={() => console.log('edit')}
+        onPress={() => editConfirmation(data)}
       />
       <Ionicon
         name="trash"

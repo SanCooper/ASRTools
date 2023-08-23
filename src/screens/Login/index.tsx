@@ -2,33 +2,14 @@ import {firebase} from '@react-native-firebase/auth';
 import React, {useState} from 'react';
 import {View} from 'react-native';
 import {TextInput, Button, Text} from 'react-native-paper';
-// import {LoginProps} from './inteface';
 import {useToast} from 'react-native-toast-notifications';
 import {LoginProps} from './interface';
-// import {useDispatch} from 'react-redux';
-// import {setUserUID} from '../../store/feature/auth/action';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// import {useSelector, useDispatch} from 'react-redux';
 
 const Login: React.FC<LoginProps> = props => {
   const {navigation} = props;
   const toast = useToast();
-  // const theme = useTheme();
-  // const dispatch = useDispatch();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-
-  // const saveDataToAsyncStorage = async (uid: string) => {
-  //   try {
-  //     const key = 'userUid'; // Ganti dengan nama kunci yang sesuai untuk data Anda
-  //     const value: string = uid; // Ganti dengan nilai yang ingin Anda simpan
-  //     await AsyncStorage.setItem(key, value);
-  //     console.log('Data berhasil disimpan di AsyncStorage.', uid);
-  //   } catch (error) {
-  //     console.error('Gagal menyimpan data di AsyncStorage:', error);
-  //   }
-  // };
 
   const handleLogin = () => {
     if (email === '' || password === '') {

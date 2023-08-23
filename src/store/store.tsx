@@ -86,6 +86,13 @@ const StockReducer = (state = initialState, action: any) => {
         ...state,
         dataStock: [...state.dataStock, action.payload],
       };
+    case 'DELETE_STOCK_DATA':
+      return {
+        ...state,
+        dataStock: state.dataStock.filter(
+          item => item.idBarang !== action.payload,
+        ),
+      };
     default:
       return state;
   }

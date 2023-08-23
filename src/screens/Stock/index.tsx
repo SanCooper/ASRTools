@@ -1,9 +1,16 @@
-import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme';
 import {Table, Row, TableWrapper, Cell} from 'react-native-reanimated-table';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+// import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
 import firestore from '@react-native-firebase/firestore';
@@ -38,6 +45,49 @@ const Stock = () => {
     dispatch({type: 'SET_STOCK_DATA', payload: items});
   }, [dispatch]);
 
+  async function deleteDocument(documentId: string, value: string) {
+    try {
+      const collectionRef = firestore().collection('Stock');
+      await collectionRef.doc(documentId).delete();
+      dispatch({type: 'DELETE_STOCK_DATA', payload: value});
+    } catch (error) {
+      console.error('Error deleting document:', error);
+    }
+  }
+
+  async function getDocumentIdsByFieldValue(fieldName: string, value: string) {
+    try {
+      const collectionRef = firestore().collection('Stock');
+      const querySnapshot = await collectionRef
+        .where(fieldName, '==', value)
+        .get();
+
+      if (!querySnapshot.empty) {
+        const documentIds = querySnapshot.docs.map(doc => doc.id);
+        deleteDocument(documentIds[0], value);
+      } else {
+        console.log('No documents found with the specified value.');
+      }
+    } catch (error) {
+      console.error('Error querying documents:', error);
+    }
+  }
+
+  const deleteConfirmation = (id: string) => {
+    Alert.alert(
+      'Konfirmasi',
+      `Yakin ingin hapus data dengan id ${id}?`,
+      [
+        {text: 'Batal', style: 'cancel'},
+        {
+          text: 'Ya',
+          onPress: () => getDocumentIdsByFieldValue('idBarang', id),
+        },
+      ],
+      {cancelable: true},
+    );
+  };
+
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -46,22 +96,24 @@ const Stock = () => {
     <View
       style={{
         alignSelf: 'center',
+        alignItems: 'center',
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: 80,
       }}>
-      <MaterialIcon
+      {/* <MaterialIcon
         name="edit-square"
         size={20}
         color={'green'}
         onPress={() => console.log('edit', data)}
-      />
+      /> */}
       <Ionicon
         name="trash"
         size={20}
         color={Pallets.danger_main}
-        onPress={() => console.log('delete')}
+        onPress={() => deleteConfirmation(data.idBarang)}
+        // onPress={() => console.log('delete')}
       />
     </View>
   );
