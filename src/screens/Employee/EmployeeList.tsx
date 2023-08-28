@@ -27,11 +27,27 @@ const EmployeeList = () => {
     (state: RootState) => state.employee.dataEmployee,
   );
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil menghapus data karyawan dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Delete',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error delete log activity employee: ', error);
+    }
+  };
+
   async function deleteDocument(documentId: string, value: string) {
     try {
       const collectionRef = firestore().collection('Employee');
       await collectionRef.doc(documentId).delete();
       dispatch({type: 'DELETE_EMPLOYEE_DATA', payload: value});
+      sendLog(value);
     } catch (error) {
       console.error('Error deleting document:', error);
     }

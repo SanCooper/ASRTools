@@ -45,11 +45,27 @@ const Stock = () => {
     dispatch({type: 'SET_STOCK_DATA', payload: items});
   }, [dispatch]);
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil menghapus data stok dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Delete',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error delete log activity stock: ', error);
+    }
+  };
+
   async function deleteDocument(documentId: string, value: string) {
     try {
       const collectionRef = firestore().collection('Stock');
       await collectionRef.doc(documentId).delete();
       dispatch({type: 'DELETE_STOCK_DATA', payload: value});
+      sendLog(value);
     } catch (error) {
       console.error('Error deleting document:', error);
     }

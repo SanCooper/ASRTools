@@ -59,7 +59,7 @@ const RootStack = () => {
       <RootNavigation.Screen
         name="EditIncoming"
         component={EditIncoming}
-        options={{headerShown: true, title: 'Eddit Transaksi Masuk'}}
+        options={{headerShown: true, title: 'Edit Transaksi Masuk'}}
       />
       <RootNavigation.Screen
         name="OutgoingStack"

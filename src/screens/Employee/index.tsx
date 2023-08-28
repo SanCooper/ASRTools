@@ -64,6 +64,21 @@ const Employee = () => {
     }));
   };
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil menambahkan data karyawan dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Input',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error adding log activity employee: ', error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (
       employee.idKaryawan === '' ||
@@ -82,6 +97,7 @@ const Employee = () => {
         await firestore().collection('Employee').add(employee);
         dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
         toast.show('Berhasil menambah data', {type: 'success'});
+        sendLog(employee.idKaryawan);
         // Reset the form
         setAutoId('');
         setEmployee({

@@ -185,6 +185,21 @@ const OutgoingTransaction = () => {
     }
   };
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil menambahkan data transaksi keluar dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Input',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error adding log activity incoming transaction: ', error);
+    }
+  };
+
   const handleSubmit = async () => {
     setOutgoing(prevOutgoing => ({
       ...prevOutgoing,
@@ -211,6 +226,7 @@ const OutgoingTransaction = () => {
         await firestore().collection('OutgoingTransaction').add(outgoing);
         dispatch({type: 'INPUT_OUTGOING_DATA', payload: outgoing});
         toast.show('Berhasil menambah data', {type: 'success'});
+        sendLog(outgoing.idPengeluaran);
         if (outgoing.keterangan === 'Barang') {
           handleSubmitStock();
         }

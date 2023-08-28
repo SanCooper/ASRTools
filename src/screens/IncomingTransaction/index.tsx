@@ -141,6 +141,21 @@ const IncomingTransaction = () => {
     }
   }
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil menambahkan data transaksi masuk dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Input',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error adding log activity incoming transaction: ', error);
+    }
+  };
+
   const handleSubmit = async () => {
     setIncoming(prevIncoming => ({
       ...prevIncoming,
@@ -159,12 +174,16 @@ const IncomingTransaction = () => {
         type: 'danger',
         duration: 1500,
       });
+    } else if (incoming.biaya < incoming.hargaPart) {
+      toast.show('Periksa lagi biaya dan harga part!', {type: 'danger'});
     } else {
       try {
         // console.log('employe', incoming);
+        console.log('incoming ', incoming);
         await firestore().collection('IncomingTransaction').add(incoming);
         dispatch({type: 'INPUT_INCOMING_DATA', payload: incoming});
         toast.show('Berhasil menambah data', {type: 'success'});
+        sendLog(incoming.idPemasukan);
         if (incoming.hargaPart !== 0 && idBarang !== '') {
           getDocumentIdsByFieldValue('idBarang', idBarang);
         }
@@ -229,10 +248,10 @@ const IncomingTransaction = () => {
   const getLaba = () => {
     if (incoming.biaya === 0) {
       return;
+    } else if (incoming.biaya < incoming.hargaPart) {
+      toast.show('Periksa lagi biaya dan harga part!', {type: 'danger'});
     } else {
       const laba = incoming.biaya - incoming.hargaPart;
-      // (incoming.biaya as unknown as number) -
-      // (incoming.hargaPart as unknown as number);
       setIncoming(prevIncoming => ({
         ...prevIncoming,
         laba: laba,

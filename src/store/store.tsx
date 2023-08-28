@@ -7,6 +7,7 @@ interface AppState {
   dataIcTransaction: any[];
   dataOgTransaction: any[];
   dataStock: any[];
+  logActivity: any[];
 }
 
 // Define actions and reducers
@@ -15,6 +16,7 @@ const initialState: AppState = {
   dataIcTransaction: [],
   dataOgTransaction: [],
   dataStock: [],
+  logActivity: [],
 };
 
 const employeeReducer = (state = initialState, action: any) => {
@@ -98,11 +100,32 @@ const StockReducer = (state = initialState, action: any) => {
   }
 };
 
+const logActivityReducer = (state = initialState, action: any) => {
+  switch (action.type) {
+    case 'SET_ACTIVITY_DATA':
+      return {...state, logActivity: action.payload};
+    case 'INPUT_ACTIVITY_DATA':
+      return {
+        ...state,
+        logActivity: [action.payload, ...state.logActivity],
+      };
+    case 'DELETE_ACTIVITY_DATA':
+      return {
+        ...state,
+        logActivity: state.logActivity.filter(
+          item => item.idActivity !== action.payload,
+        ),
+      };
+    default:
+      return state;
+  }
+};
 const rootReducer = combineReducers({
   employee: employeeReducer,
   incomingTransaction: incomingTrReducer,
   outgoingTransaction: outgoingTrReducer,
   stock: StockReducer,
+  activity: logActivityReducer,
 });
 
 // Create the Redux store
