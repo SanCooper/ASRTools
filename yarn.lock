@@ -5688,6 +5688,11 @@ react-native-paper@^5.10.0:
     color "^3.1.2"
     use-latest-callback "^0.1.5"
 
+react-native-print@^0.11.0:
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/react-native-print/-/react-native-print-0.11.0.tgz#3dc69fb05552f0c5da5be0dd345a93e1604621d1"
+  integrity sha512-hFDzb9dVJVT8c3VHNNWgkPfLF3Jfyw0WVJ3o7wUmSMmi5hJx6b++veNJ3J95d3lW3Y0sZUpGbn9+yzXrLANnJQ==
+
 react-native-reanimated-table@^0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/react-native-reanimated-table/-/react-native-reanimated-table-0.0.2.tgz#015392dbc12fb03fd872d5a7eea9bc84c4f3a685"

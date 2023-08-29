@@ -7,6 +7,7 @@ import {Table, Row, TableWrapper, Cell} from 'react-native-reanimated-table';
 import DatePicker from 'react-native-date-picker';
 import firestore from '@react-native-firebase/firestore';
 import {Button} from 'react-native-paper';
+import RNPrint from 'react-native-print';
 
 const Report = () => {
   const tableHead = [
@@ -42,6 +43,72 @@ const Report = () => {
     const year2 = date2.getFullYear();
     const localDateFormat2 = `${month2}/${year2}`;
     fetchHandle(localDateFormat2);
+  };
+
+  const handlePrint = async (data: any[]) => {
+    const tableHeaders = `
+      <tr>
+        <th>No</th>
+        <th>ID Laporan</th>
+        <th>Tanggal</th>
+        <th>Pemasukan</th>
+        <th>Pengeluaran</th>
+      </tr>
+    `;
+
+    const tableRows = data
+      .map(
+        (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${index > 8 ? 'LP0' + (index + 1) : 'LP00' + (index + 1)}</td>
+        <td>${row.tanggal}</td>
+        <td style="text-align: right;">${
+          row.pemasukan === null ? '0' : row.pemasukan
+        }</td>
+        <td style="text-align: right;">${
+          row.pengeluaran === null ? '0' : row.pengeluaran
+        }</td>
+      </tr>
+    `,
+      )
+      .join('');
+
+    const htmlContent = `
+      <style>
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: left;
+        }
+      </style>
+      <h1>Laporan Bulan ${selectedMonth}</h1>
+      <table>
+        ${tableHeaders}
+        ${tableRows}
+        <tr>
+          <td colspan="3" style="text-align: right;">Total</td>
+          <td style="text-align: right;">${
+            sumPemasukan === 0 ? '0' : sumPemasukan
+          }</td>
+          <td style="text-align: right;">${
+            sumPengeluaran === 0 ? '-' : sumPengeluaran
+          }</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align: right;">Total Laba</td>
+          <td style="text-align: right;">${sumPemasukan - sumPengeluaran}</td>
+        </tr>
+      </table>
+    `;
+
+    await RNPrint.print({
+      html: htmlContent,
+    });
   };
 
   const sumHandler = React.useCallback((data: any[]) => {
@@ -103,7 +170,6 @@ const Report = () => {
     });
     setReportData(report);
     sumHandler(report);
-    console.log('reopospr', report);
   }, [incomingData, outgoingData, sumHandler]);
 
   const fetchDataIncoming = React.useCallback(async (date: string) => {
@@ -248,6 +314,14 @@ const Report = () => {
             <Text style={{color: Pallets.black, marginLeft: 16, fontSize: 15}}>
               Laba : {sumPemasukan - sumPengeluaran}
             </Text>
+            <Button
+              style={{
+                backgroundColor: Pallets.primary_main,
+                margin: 16,
+              }}
+              onPress={() => handlePrint(reportData)}>
+              Cetak Data
+            </Button>
           </View>
         ) : null}
       </ScrollView>
