@@ -55,6 +55,21 @@ const EditEmployee: React.FC<EditEmployeeProps> = props => {
     dispatch({type: 'SET_EMPLOYEE_DATA', payload: items});
   }, [dispatch]);
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil mengubah data karyawan dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Edit',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error edit log activity employee: ', error);
+    }
+  };
+
   // Function to update the document
   const updateDocument = async (documentId: string, newData: any) => {
     try {
@@ -65,6 +80,7 @@ const EditEmployee: React.FC<EditEmployeeProps> = props => {
       console.log('Document updated successfully.');
       fetchDataEmployee();
       toast.show('Berhasil mengubah data', {type: 'success'});
+      sendLog(employee.idKaryawan);
       navigation.goBack();
     } catch (error) {
       console.error('Error updating document:', error);

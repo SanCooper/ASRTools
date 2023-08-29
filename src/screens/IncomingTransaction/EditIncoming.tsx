@@ -103,6 +103,21 @@ const EditIncoming: React.FC<EditIncomingProps> = props => {
     }));
   };
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil mengubah data transaksi masuk dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Edit',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error edit log activity incoming starnsaction: ', error);
+    }
+  };
+
   // Function to update the document
   const updateDocument = async (documentId: string, newData: any) => {
     try {
@@ -113,6 +128,7 @@ const EditIncoming: React.FC<EditIncomingProps> = props => {
       console.log('Document updated successfully.');
       fetchDataIncoming();
       toast.show('Berhasil mengubah data', {type: 'success'});
+      sendLog(incoming.idPemasukan);
       navigation.goBack();
     } catch (error) {
       console.error('Error updating document:', error);

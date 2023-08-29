@@ -145,7 +145,7 @@ const Dashboard = () => {
             Log
           </Text>
           {dataLog.length > 0 &&
-            dataLog.map((item: any, index: number) => {
+            dataLog.slice(0, 20).map((item: any, index: number) => {
               return (
                 <View
                   key={index}
@@ -155,7 +155,11 @@ const Dashboard = () => {
                     paddingVertical: 4,
                     marginBottom: 2,
                     backgroundColor:
-                      item.tipe !== 'Input' ? '#f94449' : '#bfe3b4',
+                      item.tipe === 'Delete'
+                        ? '#f94449'
+                        : item.tipe === 'Input'
+                        ? '#bfe3b4'
+                        : '#93CAED',
                   }}>
                   <Text style={{color: 'black'}}>
                     {unixToDate(item.timestamp)}

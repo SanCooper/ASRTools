@@ -66,6 +66,21 @@ const EditOutgoing: React.FC<EditOutgoingProps> = props => {
     dispatch({type: 'SET_OUTGOING_DATA', payload: items});
   }, [dispatch]);
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil mengubah data transaksi keluar dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Edit',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error edit log activity outgoing starnsaction: ', error);
+    }
+  };
+
   // Function to update the document
   const updateDocument = async (documentId: string, newData: any) => {
     try {
@@ -76,6 +91,7 @@ const EditOutgoing: React.FC<EditOutgoingProps> = props => {
       console.log('Document updated successfully.');
       fetchDataOutgoing();
       toast.show('Berhasil mengubah data', {type: 'success'});
+      sendLog(outgoing.idPengeluaran);
       navigation.goBack();
     } catch (error) {
       console.error('Error updating document:', error);
