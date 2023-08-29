@@ -4,7 +4,6 @@
     "baseUrl": ".",
     "paths": {
       "navigations/*": ["src/navigations/*"],
-      "store/*": ["src/store/*"],
       "theme":["src/theme"],
     },
     "types": ["react-native"]

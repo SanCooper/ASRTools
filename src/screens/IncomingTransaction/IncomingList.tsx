@@ -1,54 +1,40 @@
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme';
 import {Table, Row, TableWrapper, Cell} from 'react-native-reanimated-table';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-// import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
 import firestore from '@react-native-firebase/firestore';
+import {useNavigation} from '@react-navigation/native';
 
-const Stock = () => {
+const IncomingList = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<any>();
   const tableHead = [
     'No',
-    'ID Barang',
-    'Tanggal Masuk',
-    'Tanggal Keluar',
-    'Nama',
-    'Harga',
+    'ID Pemasukan',
+    'Tanggal',
+    'Tipe HP',
+    'No Nota',
+    'IMEI',
+    'Nama Pelanggan',
+    'Kerusakan',
+    'Biaya',
+    'Harga Part',
+    'Laba',
     '✎',
   ];
-  const flexArr = [0.4, 1, 1, 1, 1, 1, 1];
-  const dataStock = useSelector((state: RootState) => state.stock.dataStock);
-
-  const fetchData = React.useCallback(async () => {
-    const itemsCollection = firestore().collection('Stock');
-    const snapshot = await itemsCollection.get();
-
-    const items: any = [];
-    snapshot.forEach(doc => {
-      items.push({
-        ...doc.data(),
-      });
-    });
-    // Sort the items array by timestamp
-    items.sort((a: any, b: any) => a.timestamp - b.timestamp);
-    // setIncomingData(items);
-    dispatch({type: 'SET_STOCK_DATA', payload: items});
-  }, [dispatch]);
+  const flexArr = [0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+  const dataIncoming = useSelector(
+    (state: RootState) => state.incomingTransaction.dataIcTransaction,
+  );
 
   const sendLog = async (id: string) => {
     try {
       const activity = {
-        message: `Berhasil menghapus data stok dengan id ${id}`,
+        message: `Berhasil menghapus data transaksi masuk dengan id ${id}`,
         timestamp: new Date().getTime(),
         tipe: 'Delete',
       };
@@ -56,15 +42,15 @@ const Stock = () => {
       await firestore().collection('LogActivity').add(activity);
       dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
     } catch (error) {
-      console.error('Error delete log activity stock: ', error);
+      console.error('Error delete log activity incoming transaction: ', error);
     }
   };
 
   async function deleteDocument(documentId: string, value: string) {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('IncomingTransaction');
       await collectionRef.doc(documentId).delete();
-      dispatch({type: 'DELETE_STOCK_DATA', payload: value});
+      dispatch({type: 'DELETE_INCOMING_DATA', payload: value});
       sendLog(value);
     } catch (error) {
       console.error('Error deleting document:', error);
@@ -73,7 +59,7 @@ const Stock = () => {
 
   async function getDocumentIdsByFieldValue(fieldName: string, value: string) {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('IncomingTransaction');
       const querySnapshot = await collectionRef
         .where(fieldName, '==', value)
         .get();
@@ -97,39 +83,64 @@ const Stock = () => {
         {text: 'Batal', style: 'cancel'},
         {
           text: 'Ya',
-          onPress: () => getDocumentIdsByFieldValue('idBarang', id),
+          onPress: () => getDocumentIdsByFieldValue('idPemasukan', id),
         },
       ],
       {cancelable: true},
     );
   };
 
-  React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const editConfirmation = (data: any) => {
+    Alert.alert(
+      'Konfirmasi',
+      `Yakin ingin edit data dengan id ${data.idPemasukan}?`,
+      [
+        {text: 'Batal', style: 'cancel'},
+        {
+          text: 'Ya',
+          onPress: () =>
+            navigation.navigate('EditIncoming', {
+              idPemasukan: data.idPemasukan,
+              tanggalMasuk: data.tanggalMasuk,
+              tipeHP: data.tipeHP,
+              noNota: data.noNota,
+              IMEI: data.IMEI,
+              namaPelanggan: data.namaPelanggan,
+              kerusakan: data.kerusakan,
+              biaya: data.biaya,
+              hargaPart: data.hargaPart,
+              laba: data.laba,
+              timestamp: data.timestamp,
+            }),
+        },
+      ],
+      {cancelable: true},
+    );
+  };
 
   const buttonElement = (data: any) => (
     <View
       style={{
         alignSelf: 'center',
-        alignItems: 'center',
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: 80,
       }}>
-      {/* <MaterialIcon
+      <MaterialIcon
         name="edit-square"
         size={20}
         color={'green'}
-        onPress={() => console.log('edit', data)}
-      /> */}
+        onPress={() => editConfirmation(data)}
+      />
       <Ionicon
         name="trash"
         size={20}
         color={Pallets.danger_main}
-        onPress={() => deleteConfirmation(data.idBarang)}
-        // onPress={() => console.log('delete')}
+        onPress={() => deleteConfirmation(data.idPemasukan)}
+        // onPress={() =>
+        //   getDocumentIdsByFieldValue('idPemasukan', data.idPemasukan)
+        // }
       />
     </View>
   );
@@ -156,14 +167,19 @@ const Stock = () => {
                 flexArr={flexArr}
               />
             </TableWrapper>
-            {dataStock.map(
+            {dataIncoming.map(
               (
-                stock: {
-                  idBarang: React.Key | null | undefined;
+                incomingTransaction: {
+                  idPemasukan: React.Key | null | undefined;
                   tanggalMasuk: any;
-                  tanggalKeluar: any;
-                  nama: any;
-                  harga: any;
+                  tipeHP: any;
+                  noNota: any;
+                  IMEI: any;
+                  namaPelanggan: any;
+                  kerusakan: any;
+                  biaya: any;
+                  hargaPart: any;
+                  laba: any;
                 },
                 index: number,
               ) => (
@@ -174,32 +190,57 @@ const Stock = () => {
                     style={{width: 40, padding: 5}}
                   />
                   <Cell
-                    data={stock.idBarang}
+                    data={incomingTransaction.idPemasukan}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.tanggalMasuk}
+                    data={incomingTransaction.tanggalMasuk}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.tanggalKeluar}
+                    data={incomingTransaction.tipeHP}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.nama}
+                    data={incomingTransaction.noNota}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.harga}
+                    data={incomingTransaction.IMEI}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={buttonElement(stock)}
+                    data={incomingTransaction.namaPelanggan}
+                    textStyle={styles.text}
+                    style={{width: 100, padding: 5}}
+                  />
+                  <Cell
+                    data={incomingTransaction.kerusakan}
+                    textStyle={styles.text}
+                    style={{width: 100, padding: 5}}
+                  />
+                  <Cell
+                    data={incomingTransaction.biaya}
+                    textStyle={styles.text}
+                    style={{width: 100, padding: 5}}
+                  />
+                  <Cell
+                    data={incomingTransaction.hargaPart}
+                    textStyle={styles.text}
+                    style={{width: 100, padding: 5}}
+                  />
+                  <Cell
+                    data={incomingTransaction.laba}
+                    textStyle={styles.text}
+                    style={{width: 100, padding: 5}}
+                  />
+                  <Cell
+                    data={buttonElement(incomingTransaction)}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
@@ -208,22 +249,19 @@ const Stock = () => {
             )}
           </Table>
         </ScrollView>
-        <Text style={{color: Pallets.black, margin: 16}}>
-          Input stok barang dari Transaksi Pengeluaran
-        </Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default Stock;
+export default IncomingList;
 
 const styles = StyleSheet.create({
   head: {
     height: 40,
     backgroundColor: '#f1f8ff',
     justifyContent: 'center',
-    width: 640,
+    width: 1140,
   },
   text: {marginHorizontal: 4, color: Pallets.black},
 });

@@ -8,14 +8,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import {Pallets} from '../../theme/';
+import {Pallets} from '../../theme';
 import {Button} from 'react-native-paper';
 import DatePicker from 'react-native-date-picker';
 import {useToast} from 'react-native-toast-notifications';
 import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from 'src/store/store';
 import firestore from '@react-native-firebase/firestore';
 import {Dropdown} from '../../components/atoms';
+import {EditIncomingProps} from './inteface';
+import {RootState} from 'src/store/store';
+
 interface IncomingTransaction {
   idPemasukan: string;
   tanggalMasuk: string;
@@ -30,12 +32,11 @@ interface IncomingTransaction {
   timestamp: number;
 }
 
-const IncomingTransaction = () => {
+const EditIncoming: React.FC<EditIncomingProps> = props => {
+  const {route, navigation} = props;
   const dispatch = useDispatch();
-  const [autoId, setAutoId] = React.useState<string>('');
   const [modalVisible, setModalVisible] = React.useState<boolean>(false);
   const [stockVisible, setStockVisible] = React.useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = React.useState<string>('');
   const [idBarang, setIdBarang] = React.useState<string>('');
   const [incoming, setIncoming] = React.useState<IncomingTransaction>({
     idPemasukan: '',
@@ -51,21 +52,17 @@ const IncomingTransaction = () => {
     timestamp: 0,
   });
   const toast = useToast();
-  const dataIncoming = useSelector(
-    (state: RootState) => state.incomingTransaction.dataIcTransaction,
-  );
   const dataStock = useSelector((state: RootState) => state.stock.dataStock);
 
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date.toLocaleDateString('id-ID'));
     setIncoming(prevIncoming => ({
       ...prevIncoming,
       tanggalMasuk: date.toLocaleDateString('id-ID'),
     }));
   };
 
-  const fetchDataStock = React.useCallback(async () => {
-    const itemsCollection = firestore().collection('Stock');
+  const fetchDataIncoming = React.useCallback(async () => {
+    const itemsCollection = firestore().collection('IncomingTransaction');
     const snapshot = await itemsCollection.get();
 
     const items: any = [];
@@ -77,7 +74,7 @@ const IncomingTransaction = () => {
     // Sort the items array by timestamp
     items.sort((a: any, b: any) => a.timestamp - b.timestamp);
     // setIncomingData(items);
-    dispatch({type: 'SET_STOCK_DATA', payload: items});
+    dispatch({type: 'SET_INCOMING_DATA', payload: items});
   }, [dispatch]);
 
   const fetchData = React.useCallback(async () => {
@@ -106,16 +103,33 @@ const IncomingTransaction = () => {
     }));
   };
 
+  const sendLog = async (id: string) => {
+    try {
+      const activity = {
+        message: `Berhasil mengubah data transaksi masuk dengan id ${id}`,
+        timestamp: new Date().getTime(),
+        tipe: 'Edit',
+      };
+      console.log('Activity', activity);
+      await firestore().collection('LogActivity').add(activity);
+      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
+    } catch (error) {
+      console.error('Error edit log activity incoming starnsaction: ', error);
+    }
+  };
+
   // Function to update the document
   const updateDocument = async (documentId: string, newData: any) => {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('IncomingTransaction');
       const documentRef = collectionRef.doc(documentId);
 
       await documentRef.update(newData);
-      setIdBarang('');
-      fetchDataStock();
       console.log('Document updated successfully.');
+      fetchDataIncoming();
+      toast.show('Berhasil mengubah data', {type: 'success'});
+      sendLog(incoming.idPemasukan);
+      navigation.goBack();
     } catch (error) {
       console.error('Error updating document:', error);
     }
@@ -123,12 +137,22 @@ const IncomingTransaction = () => {
 
   async function getDocumentIdsByFieldValue(fieldName: string, value: string) {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('IncomingTransaction');
       const querySnapshot = await collectionRef
         .where(fieldName, '==', value)
         .get();
       const newData = {
-        tanggalKeluar: selectedDate,
+        idPemasukan: incoming.idPemasukan,
+        tanggalMasuk: incoming.tanggalMasuk,
+        tipeHP: incoming.tipeHP,
+        noNota: incoming.noNota,
+        IMEI: incoming.IMEI,
+        namaPelanggan: incoming.namaPelanggan,
+        kerusakan: incoming.kerusakan,
+        biaya: incoming.biaya,
+        hargaPart: incoming.hargaPart,
+        laba: incoming.laba,
+        timestamp: incoming.timestamp,
       };
       if (!querySnapshot.empty) {
         const documentIds = querySnapshot.docs.map(doc => doc.id);
@@ -141,26 +165,7 @@ const IncomingTransaction = () => {
     }
   }
 
-  const sendLog = async (id: string) => {
-    try {
-      const activity = {
-        message: `Berhasil menambahkan data transaksi masuk dengan id ${id}`,
-        timestamp: new Date().getTime(),
-        tipe: 'Input',
-      };
-      console.log('Activity', activity);
-      await firestore().collection('LogActivity').add(activity);
-      dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
-    } catch (error) {
-      console.error('Error adding log activity incoming transaction: ', error);
-    }
-  };
-
   const handleSubmit = async () => {
-    setIncoming(prevIncoming => ({
-      ...prevIncoming,
-      tanggalMasuk: selectedDate,
-    }));
     if (
       incoming.idPemasukan === '' ||
       incoming.tanggalMasuk === '' ||
@@ -174,90 +179,45 @@ const IncomingTransaction = () => {
         type: 'danger',
         duration: 1500,
       });
-    } else if (incoming.biaya < incoming.hargaPart) {
-      toast.show('Periksa lagi biaya dan harga part!', {type: 'danger'});
     } else {
-      try {
-        // console.log('employe', incoming);
-        console.log('incoming ', incoming);
-        await firestore().collection('IncomingTransaction').add(incoming);
-        dispatch({type: 'INPUT_INCOMING_DATA', payload: incoming});
-        toast.show('Berhasil menambah data', {type: 'success'});
-        sendLog(incoming.idPemasukan);
-        if (incoming.hargaPart !== 0 && idBarang !== '') {
-          getDocumentIdsByFieldValue('idBarang', idBarang);
-        }
-        // Reset the form
-        setAutoId('');
-        setIncoming({
-          idPemasukan: '',
-          tanggalMasuk: selectedDate,
-          tipeHP: '',
-          noNota: '',
-          IMEI: '',
-          namaPelanggan: '',
-          kerusakan: '',
-          biaya: 0,
-          hargaPart: 0,
-          laba: 0,
-          timestamp: 0,
-        });
-      } catch (error) {
-        console.error('Error adding incoming: ', error);
-      }
+      getDocumentIdsByFieldValue('idPemasukan', incoming.idPemasukan);
     }
   };
 
-  const generateAutoId = React.useCallback(() => {
-    if (dataIncoming.length > 0) {
-      const array = dataIncoming.map(
-        (entry: {idPemasukan: any}) => entry.idPemasukan,
-      );
-      const lastTwoDigits = array.map((id: string) =>
-        parseInt(id.slice(-2), 10),
-      );
-      // Find the largest last two digits
-      const largestLastTwoDigits = Math.max(...lastTwoDigits);
-      // Increment the largest last two digits and format the new ID
-      const newIdNumber = largestLastTwoDigits + 1;
-      const newId = `PM${newIdNumber.toString().padStart(3, '0')}`;
-      setAutoId(newId);
-      setIncoming(prevIncoming => ({
-        ...prevIncoming,
-        idPemasukan: newId,
-      }));
-      const dateTimestamp = new Date().getTime();
-      setIncoming(prevIncoming => ({
-        ...prevIncoming,
-        timestamp: dateTimestamp,
-      }));
-    } else {
-      setAutoId('PM001');
-      setIncoming(prevIncoming => ({
-        ...prevIncoming,
-        idPemasukan: 'PM001',
-      }));
-      const dateTimestamp = new Date().getTime();
-      setIncoming(prevIncoming => ({
-        ...prevIncoming,
-        timestamp: dateTimestamp,
-      }));
-    }
-  }, [dataIncoming]);
+  const setIncomingHandler = React.useCallback(() => {
+    setIncoming(prevIncoming => ({
+      ...prevIncoming,
+      idPemasukan: route.params.idPemasukan,
+      tanggalMasuk: route.params.tanggalMasuk,
+      tipeHP: route.params.tipeHP,
+      noNota: route.params.noNota,
+      IMEI: route.params.IMEI,
+      namaPelanggan: route.params.namaPelanggan,
+      kerusakan: route.params.kerusakan,
+      biaya: route.params.biaya,
+      hargaPart: route.params.hargaPart,
+      laba: route.params.laba,
+      timestamp: route.params.timestamp,
+    }));
+  }, [route.params]);
 
   const getLaba = () => {
     if (incoming.biaya === 0) {
       return;
-    } else if (incoming.biaya < incoming.hargaPart) {
-      toast.show('Periksa lagi biaya dan harga part!', {type: 'danger'});
     } else {
       const laba = incoming.biaya - incoming.hargaPart;
+      // (incoming.biaya as unknown as number) -
+      // (incoming.hargaPart as unknown as number);
       setIncoming(prevIncoming => ({
         ...prevIncoming,
         laba: laba,
       }));
     }
   };
+
+  React.useEffect(() => {
+    setIncomingHandler();
+  }, [setIncomingHandler]);
 
   const StockDropdown = React.useCallback(
     (stock: any[]) => {
@@ -304,23 +264,32 @@ const IncomingTransaction = () => {
             style={[
               styles.inputText,
               {
-                color: autoId === '' ? Pallets.netral_70 : Pallets.black,
+                color:
+                  incoming.idPemasukan === ''
+                    ? Pallets.netral_70
+                    : Pallets.black,
                 paddingTop: 7,
               },
-            ]}
-            onPress={() => generateAutoId()}>
-            {autoId !== '' ? autoId : 'ID Transaksi Masuk'}
+            ]}>
+            {incoming.idPemasukan !== ''
+              ? incoming.idPemasukan
+              : 'ID Transaksi Masuk'}
           </Text>
           <Text
             style={[
               styles.inputText,
               {
-                color: selectedDate === '' ? Pallets.netral_70 : Pallets.black,
+                color:
+                  incoming.tanggalMasuk === ''
+                    ? Pallets.netral_70
+                    : Pallets.black,
                 paddingTop: 7,
               },
             ]}
             onPress={() => setModalVisible(!modalVisible)}>
-            {selectedDate !== '' ? selectedDate : 'Tanggal Transaksi'}
+            {incoming.tanggalMasuk !== ''
+              ? incoming.tanggalMasuk
+              : 'Tanggal Transaksi'}
           </Text>
           <TextInput
             placeholder="Tipe HP"
@@ -433,7 +402,7 @@ const IncomingTransaction = () => {
   );
 };
 
-export default IncomingTransaction;
+export default EditIncoming;
 
 const styles = StyleSheet.create({
   inputText: {

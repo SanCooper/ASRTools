@@ -1,34 +1,15 @@
 import {firebase} from '@react-native-firebase/auth';
 import React, {useState} from 'react';
 import {View} from 'react-native';
-import {TextInput, Button, Text, useTheme} from 'react-native-paper';
-// import {LoginProps} from './inteface';
+import {TextInput, Button, Text} from 'react-native-paper';
 import {useToast} from 'react-native-toast-notifications';
 import {LoginProps} from './interface';
-// import {useDispatch} from 'react-redux';
-// import {setUserUID} from '../../store/feature/auth/action';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// import {useSelector, useDispatch} from 'react-redux';
 
 const Login: React.FC<LoginProps> = props => {
   const {navigation} = props;
   const toast = useToast();
-  const theme = useTheme();
-  // const dispatch = useDispatch();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-
-  // const saveDataToAsyncStorage = async (uid: string) => {
-  //   try {
-  //     const key = 'userUid'; // Ganti dengan nama kunci yang sesuai untuk data Anda
-  //     const value: string = uid; // Ganti dengan nilai yang ingin Anda simpan
-  //     await AsyncStorage.setItem(key, value);
-  //     console.log('Data berhasil disimpan di AsyncStorage.', uid);
-  //   } catch (error) {
-  //     console.error('Gagal menyimpan data di AsyncStorage:', error);
-  //   }
-  // };
 
   const handleLogin = () => {
     if (email === '' || password === '') {
@@ -47,19 +28,33 @@ const Login: React.FC<LoginProps> = props => {
               type: 'success',
               duration: 2000,
             });
-            console.log('user ', user.uid);
+            // console.log('user ', user.uid);
             // dispatch(setUserUID(user.uid));
             // saveDataToAsyncStorage(user.uid);
-            // navigation.navigate('Home');
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Dashboard'}],
+            });
           }
           if (user.emailVerified === false) {
-            toast.show(
-              'Email belum terverifikasi. Silahkan periksa email anda!',
-              {
-                type: 'warning',
-                duration: 2000,
-              },
-            );
+            toast.show('Login berhasil!', {
+              type: 'success',
+              duration: 2000,
+            });
+            // console.log('user ', user.uid);
+            // dispatch(setUserUID(user.uid));
+            // saveDataToAsyncStorage(user.uid);
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Dashboard'}],
+            });
+            // toast.show(
+            //   'Email belum terverifikasi. Silahkan periksa email anda!',
+            //   {
+            //     type: 'warning',
+            //     duration: 2000,
+            //   },
+            // );
           }
         })
         .catch(error => {
@@ -127,7 +122,7 @@ const Login: React.FC<LoginProps> = props => {
           style={{borderRadius: 10}}>
           Login
         </Button>
-        <View
+        {/* <View
           style={{
             flexDirection: 'row',
             marginTop: 10,
@@ -138,7 +133,7 @@ const Login: React.FC<LoginProps> = props => {
             onPress={() => navigation.navigate('Dashboard')}>
             Ke Dashboard
           </Text>
-        </View>
+        </View> */}
         {/* <View
           style={{
             flexDirection: 'row',

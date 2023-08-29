@@ -1,54 +1,36 @@
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import React from 'react';
 import {Pallets} from '../../theme';
 import {Table, Row, TableWrapper, Cell} from 'react-native-reanimated-table';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-// import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'src/store/store';
 import firestore from '@react-native-firebase/firestore';
+import {useNavigation} from '@react-navigation/native';
 
-const Stock = () => {
+const EmployeeList = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<any>();
+  // const [employeeData, setEmployeeData] = React.useState<any>([]);
   const tableHead = [
     'No',
-    'ID Barang',
-    'Tanggal Masuk',
-    'Tanggal Keluar',
+    'ID Karyawan',
     'Nama',
-    'Harga',
+    'Jabatan',
+    'Gender',
+    'Gaji',
     '✎',
   ];
-  const flexArr = [0.4, 1, 1, 1, 1, 1, 1];
-  const dataStock = useSelector((state: RootState) => state.stock.dataStock);
-
-  const fetchData = React.useCallback(async () => {
-    const itemsCollection = firestore().collection('Stock');
-    const snapshot = await itemsCollection.get();
-
-    const items: any = [];
-    snapshot.forEach(doc => {
-      items.push({
-        ...doc.data(),
-      });
-    });
-    // Sort the items array by timestamp
-    items.sort((a: any, b: any) => a.timestamp - b.timestamp);
-    // setIncomingData(items);
-    dispatch({type: 'SET_STOCK_DATA', payload: items});
-  }, [dispatch]);
+  const flexArr = [0.4, 1, 1, 1, 1, 1];
+  const dataEmployee = useSelector(
+    (state: RootState) => state.employee.dataEmployee,
+  );
 
   const sendLog = async (id: string) => {
     try {
       const activity = {
-        message: `Berhasil menghapus data stok dengan id ${id}`,
+        message: `Berhasil menghapus data karyawan dengan id ${id}`,
         timestamp: new Date().getTime(),
         tipe: 'Delete',
       };
@@ -56,15 +38,15 @@ const Stock = () => {
       await firestore().collection('LogActivity').add(activity);
       dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
     } catch (error) {
-      console.error('Error delete log activity stock: ', error);
+      console.error('Error delete log activity employee: ', error);
     }
   };
 
   async function deleteDocument(documentId: string, value: string) {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('Employee');
       await collectionRef.doc(documentId).delete();
-      dispatch({type: 'DELETE_STOCK_DATA', payload: value});
+      dispatch({type: 'DELETE_EMPLOYEE_DATA', payload: value});
       sendLog(value);
     } catch (error) {
       console.error('Error deleting document:', error);
@@ -73,7 +55,7 @@ const Stock = () => {
 
   async function getDocumentIdsByFieldValue(fieldName: string, value: string) {
     try {
-      const collectionRef = firestore().collection('Stock');
+      const collectionRef = firestore().collection('Employee');
       const querySnapshot = await collectionRef
         .where(fieldName, '==', value)
         .get();
@@ -97,39 +79,56 @@ const Stock = () => {
         {text: 'Batal', style: 'cancel'},
         {
           text: 'Ya',
-          onPress: () => getDocumentIdsByFieldValue('idBarang', id),
+          onPress: () => getDocumentIdsByFieldValue('idKaryawan', id),
         },
       ],
       {cancelable: true},
     );
   };
 
-  React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const editConfirmation = (data: any) => {
+    Alert.alert(
+      'Konfirmasi',
+      `Yakin ingin edit data dengan id ${data.idKaryawan}?`,
+      [
+        {text: 'Batal', style: 'cancel'},
+        {
+          text: 'Ya',
+          onPress: () =>
+            navigation.navigate('EditEmployee', {
+              idKaryawan: data.idKaryawan,
+              nama: data.nama,
+              jabatan: data.jabatan,
+              gaji: data.gaji,
+              jenisKelamin: data.jenisKelamin,
+              timestamp: data.timestamp,
+            }),
+        },
+      ],
+      {cancelable: true},
+    );
+  };
 
   const buttonElement = (data: any) => (
     <View
       style={{
         alignSelf: 'center',
-        alignItems: 'center',
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: 80,
       }}>
-      {/* <MaterialIcon
+      <MaterialIcon
         name="edit-square"
         size={20}
         color={'green'}
-        onPress={() => console.log('edit', data)}
-      /> */}
+        onPress={() => editConfirmation(data)}
+      />
       <Ionicon
         name="trash"
         size={20}
         color={Pallets.danger_main}
-        onPress={() => deleteConfirmation(data.idBarang)}
-        // onPress={() => console.log('delete')}
+        onPress={() => deleteConfirmation(data.idKaryawan)}
       />
     </View>
   );
@@ -156,14 +155,14 @@ const Stock = () => {
                 flexArr={flexArr}
               />
             </TableWrapper>
-            {dataStock.map(
+            {dataEmployee.map(
               (
-                stock: {
-                  idBarang: React.Key | null | undefined;
-                  tanggalMasuk: any;
-                  tanggalKeluar: any;
+                employee: {
+                  idKaryawan: React.Key | null | undefined;
                   nama: any;
-                  harga: any;
+                  jabatan: any;
+                  gaji: any;
+                  jenisKelamin: any;
                 },
                 index: number,
               ) => (
@@ -174,49 +173,59 @@ const Stock = () => {
                     style={{width: 40, padding: 5}}
                   />
                   <Cell
-                    data={stock.idBarang}
+                    data={employee.idKaryawan}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.tanggalMasuk}
+                    data={employee.nama}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.tanggalKeluar}
+                    data={employee.jabatan}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.nama}
+                    data={employee.jenisKelamin}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={stock.harga}
+                    data={employee.gaji}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
                   <Cell
-                    data={buttonElement(stock)}
+                    data={buttonElement(employee)}
                     textStyle={styles.text}
                     style={{width: 100, padding: 5}}
                   />
+                  {/* <Row
+                      data={[
+                        employee.IdKaryawan,
+                        employee.Nama,
+                        employee.Jabatan,
+                        employee.Gaji,
+                        employee.JenisKelamin,
+                        '',
+                      ]}
+                      textStyle={styles.text}
+                      style={{height: 40, width: 500}}
+                      flexArr={flexArr}
+                    /> */}
                 </TableWrapper>
               ),
             )}
           </Table>
         </ScrollView>
-        <Text style={{color: Pallets.black, margin: 16}}>
-          Input stok barang dari Transaksi Pengeluaran
-        </Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default Stock;
+export default EmployeeList;
 
 const styles = StyleSheet.create({
   head: {

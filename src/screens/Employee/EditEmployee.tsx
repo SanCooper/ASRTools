@@ -8,13 +8,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import {Pallets} from '../../theme/';
+import {Pallets} from '../../theme';
 import {Button} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import {useToast} from 'react-native-toast-notifications';
-import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from 'src/store/store';
 import {Dropdown} from '../../components/atoms';
+import {EditEmployeeProps} from './inteface';
+import {useDispatch} from 'react-redux';
+
 interface Employee {
   idKaryawan: string;
   nama: string;
@@ -24,12 +25,12 @@ interface Employee {
   timestamp: number;
 }
 
-const Employee = () => {
+const EditEmployee: React.FC<EditEmployeeProps> = props => {
+  const {route, navigation} = props;
   const dispatch = useDispatch();
-  const [autoId, setAutoId] = React.useState<string>('');
   const [genderModal, setGenderModal] = React.useState<boolean>(false);
   const [employee, setEmployee] = React.useState<Employee>({
-    idKaryawan: autoId,
+    idKaryawan: '',
     nama: '',
     jabatan: '',
     gaji: 0,
@@ -37,11 +38,8 @@ const Employee = () => {
     timestamp: 0,
   });
   const toast = useToast();
-  const dataEmployee = useSelector(
-    (state: RootState) => state.employee.dataEmployee,
-  );
 
-  const fetchData = React.useCallback(async () => {
+  const fetchDataEmployee = React.useCallback(async () => {
     const itemsCollection = firestore().collection('Employee');
     const snapshot = await itemsCollection.get();
 
@@ -57,27 +55,63 @@ const Employee = () => {
     dispatch({type: 'SET_EMPLOYEE_DATA', payload: items});
   }, [dispatch]);
 
-  const handleInputChange = (field: keyof Employee, value: string) => {
-    setEmployee(prevEmployee => ({
-      ...prevEmployee,
-      [field]: value,
-    }));
-  };
-
   const sendLog = async (id: string) => {
     try {
       const activity = {
-        message: `Berhasil menambahkan data karyawan dengan id ${id}`,
+        message: `Berhasil mengubah data karyawan dengan id ${id}`,
         timestamp: new Date().getTime(),
-        tipe: 'Input',
+        tipe: 'Edit',
       };
       console.log('Activity', activity);
       await firestore().collection('LogActivity').add(activity);
       dispatch({type: 'INPUT_ACTIVITY_DATA', payload: activity});
     } catch (error) {
-      console.error('Error adding log activity employee: ', error);
+      console.error('Error edit log activity employee: ', error);
     }
   };
+
+  // Function to update the document
+  const updateDocument = async (documentId: string, newData: any) => {
+    try {
+      const collectionRef = firestore().collection('Employee');
+      const documentRef = collectionRef.doc(documentId);
+
+      await documentRef.update(newData);
+      console.log('Document updated successfully.');
+      fetchDataEmployee();
+      toast.show('Berhasil mengubah data', {type: 'success'});
+      sendLog(employee.idKaryawan);
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error updating document:', error);
+    }
+  };
+
+  async function getDocumentIdsByFieldValue(fieldName: string, value: string) {
+    console.log('dsad', fieldName, value);
+    try {
+      const collectionRef = firestore().collection('Employee');
+      const querySnapshot = await collectionRef
+        .where(fieldName, '==', value)
+        .get();
+      const newData = {
+        idKaryawan: employee.idKaryawan,
+        nama: employee.nama,
+        jabatan: employee.jabatan,
+        gaji: employee.gaji,
+        jenisKelamin: employee.jenisKelamin,
+        timestamp: employee.timestamp,
+      };
+      if (!querySnapshot.empty) {
+        const documentIds = querySnapshot.docs.map(doc => doc.id);
+        updateDocument(documentIds[0], newData);
+      } else {
+        console.log('No documents found with the specified value.');
+      }
+    } catch (error) {
+      console.error('Error querying documents:', error);
+    }
+  }
 
   const handleSubmit = async () => {
     if (
@@ -92,65 +126,28 @@ const Employee = () => {
         duration: 1500,
       });
     } else {
-      try {
-        // console.log('employe', employee);
-        await firestore().collection('Employee').add(employee);
-        dispatch({type: 'INPUT_EMPLOYEE_DATA', payload: employee});
-        toast.show('Berhasil menambah data', {type: 'success'});
-        sendLog(employee.idKaryawan);
-        // Reset the form
-        setAutoId('');
-        setEmployee({
-          idKaryawan: autoId,
-          nama: '',
-          jabatan: '',
-          gaji: 0,
-          jenisKelamin: '',
-          timestamp: 0,
-        });
-      } catch (error) {
-        console.error('Error adding employee: ', error);
-      }
+      getDocumentIdsByFieldValue('idKaryawan', employee.idKaryawan);
     }
   };
 
-  const generateAutoId = React.useCallback(() => {
-    if (dataEmployee.length > 0) {
-      const array = dataEmployee.map(
-        (entry: {idKaryawan: any}) => entry.idKaryawan,
-      );
-      const lastTwoDigits = array.map((id: string) =>
-        parseInt(id.slice(-2), 10),
-      );
-      // Find the largest last two digits
-      const largestLastTwoDigits = Math.max(...lastTwoDigits);
+  const handleInputChange = (field: keyof Employee, value: string) => {
+    setEmployee(prevEmployee => ({
+      ...prevEmployee,
+      [field]: value,
+    }));
+  };
 
-      // Increment the largest last two digits and format the new ID
-      const newIdNumber = largestLastTwoDigits + 1;
-      const newId = `KY${newIdNumber.toString().padStart(3, '0')}`;
-      setAutoId(newId);
-      setEmployee(prevEmployee => ({
-        ...prevEmployee,
-        idKaryawan: newId,
-      }));
-      const dateTimestamp = new Date().getTime();
-      setEmployee(prevEmployee => ({
-        ...prevEmployee,
-        timestamp: dateTimestamp,
-      }));
-    } else {
-      setAutoId('KY001');
-      setEmployee(prevEmployee => ({
-        ...prevEmployee,
-        idKaryawan: 'KY001',
-      }));
-      const dateTimestamp = new Date().getTime();
-      setEmployee(prevEmployee => ({
-        ...prevEmployee,
-        timestamp: dateTimestamp,
-      }));
-    }
-  }, [dataEmployee]);
+  const setEmployeeHandler = React.useCallback(() => {
+    setEmployee(prevEmployee => ({
+      ...prevEmployee,
+      idKaryawan: route.params.idKaryawan,
+      nama: route.params.nama,
+      jabatan: route.params.jabatan,
+      gaji: route.params.gaji,
+      jenisKelamin: route.params.jenisKelamin,
+      timestamp: route.params.timestamp,
+    }));
+  }, [route.params]);
 
   // eslint-disable-next-line react/no-unstable-nested-components
   const GenderContent = () => (
@@ -191,8 +188,8 @@ const Employee = () => {
   );
 
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    setEmployeeHandler();
+  }, [setEmployeeHandler]);
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -202,12 +199,14 @@ const Employee = () => {
             style={[
               styles.inputText,
               {
-                color: autoId === '' ? Pallets.netral_70 : Pallets.black,
+                color:
+                  employee.idKaryawan === ''
+                    ? Pallets.netral_70
+                    : Pallets.black,
                 paddingTop: 7,
               },
-            ]}
-            onPress={() => generateAutoId()}>
-            {autoId !== '' ? autoId : 'ID Karyawan'}
+            ]}>
+            {employee.idKaryawan !== '' ? employee.idKaryawan : 'ID Karyawan'}
           </Text>
           <TextInput
             placeholder="Nama"
@@ -223,13 +222,6 @@ const Employee = () => {
             value={employee.jabatan}
             onChangeText={value => handleInputChange('jabatan', value)}
           />
-          {/* <TextInput
-            placeholder="Jenis Kelamin"
-            placeholderTextColor={Pallets.netral_70}
-            style={styles.inputText}
-            value={employee.jenisKelamin}
-            onChangeText={value => handleInputChange('jenisKelamin', value)}
-          /> */}
           <Dropdown
             label={
               employee.jenisKelamin !== ''
@@ -264,7 +256,7 @@ const Employee = () => {
   );
 };
 
-export default Employee;
+export default EditEmployee;
 
 const styles = StyleSheet.create({
   inputText: {
